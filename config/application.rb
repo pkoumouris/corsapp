@@ -6,7 +6,7 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-config.secret_key_base = 'blipblapblup'
+#config.secret_key_base = 'blipblapblup'
 
 module Corsapp
   class Application < Rails::Application
