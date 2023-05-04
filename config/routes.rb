@@ -5,4 +5,6 @@ Rails.application.routes.draw do
   # root "articles#index"
   get '/test', to: 'general#test'
   get '/gnaf', to: 'general#gnaf'
+  post '/payment', to: 'general#wem_payment'
+  get '/getcampaigns', to: 'general#get_campaigns'
 end
