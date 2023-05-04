@@ -39,8 +39,7 @@ class GeneralController < ApplicationController
                 }
             }.to_json, :headers => {
                 'Content-Type'=>'application/json',
-                'Accept'=>'application/json',
-                'Authorization'=>'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImFsZyI6IkhTNTEyIiwia2lkIjoielhuOTRfbFBsZ1EzUXctcTE3QV9VRHU5QWx1VkFteHZZWkhELWZyWFBWMCJ9.eyJpc3MiOiJuYnVpbGQiLCJpYXQiOjE2ODI5OTkzMjgsImp0aSI6Ijg1OWE2Nzc0LTQwYWQtNGVjYS05Y2UzLTU2MTY2NmUwMDc2MyIsInBybiI6IjY0ODc2MHxhY2wiLCJ1c2VyIjp7ImlkIjo2NDg3NjAsImVtYWlsIjoicGFycmlzLmtvdW1vdXJpc0BnbWFpbC5jb20ifSwibmF0aW9uIjp7ImlkIjoiNTY5NWQ0ZWVkNTM1Y2Y2NTA1MDAwMDA0Iiwic2x1ZyI6ImFjbCJ9fQ.TSaWHQREYWUUY1LDYrdBOOWLDr_FrZrRYZWXn46T5XzSo04UgddfM-ZiJ8TNniz4evhaWvvnwoTO2Z-lvrGiHw'
+                'Accept'=>'application/json'
             })
             puts "nb_resp"
             puts nb_resp
