@@ -9,7 +9,7 @@ class GeneralController < ApplicationController
 
     def gnaf
         response = HTTParty.get("https://api.psma.com.au/v2/addresses/geocoder?additionalProperties=localGovernmentArea,stateElectorate,commonwealthElectorate,asgsMain&address=#{params[:address]}",
-            :headers => {"Authorization"=>'0YONURTjk2DbMU4zKFViQb8MuqAPTOoZ'})
+            :headers => {"Authorization"=>ENV['GNAF_API_KEY']})
         puts response
         render json: response.to_json
     end
@@ -22,10 +22,7 @@ class GeneralController < ApplicationController
                 'Accept'=>'application/json'
             })
         #HTTParty.post("https://acl.nationbuilder.com/api/v2/donations")
-        puts response
-        puts "Amount"
-        puts params[:tgt_body]["SecurePay Amount".to_sym]
-        if !!response["Secure Pay Success"] || true
+        if response["Secure Pay Success"]
             nb_resp = HTTParty.post("https://acl.nationbuilder.com/api/v2/donations",:body => {
                 "data"=> {
                     "type" => "donations",
@@ -39,14 +36,23 @@ class GeneralController < ApplicationController
                 }
             }.to_json, :headers => {
                 'Content-Type'=>'application/json',
-                'Accept'=>'application/json'
+                'Accept'=>'application/json',
+                'Authorization'=>ENV['NB_TEST_TOKEN']
             })
             puts "nb_resp"
             puts nb_resp
+            render json: {
+                success: true,
+                response: response.to_json
+            }.to_json
+        else
+            render json: {
+                success: false
+            }.to_json
         end
         #nb_resp = JSON.parse(response["NB Donation Response"])
         #puts nb_resp
-        render json: response.to_json
+        #render json: response.to_json
     end
 
     def get_campaigns
