@@ -39,11 +39,10 @@ class GeneralController < ApplicationController
                 'Accept'=>'application/json',
                 'Authorization'=>ENV['NB_TEST_TOKEN']
             })
-            puts "nb_resp"
-            puts nb_resp
             render json: {
                 success: true,
-                response: response.to_json
+                response: response,
+                nb_resp: nb_resp
             }.to_json
         else
             render json: {
