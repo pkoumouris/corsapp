@@ -46,7 +46,8 @@ class GeneralController < ApplicationController
             }.to_json
         else
             render json: {
-                success: false
+                success: false,
+                response: response
             }.to_json
         end
         #nb_resp = JSON.parse(response["NB Donation Response"])
