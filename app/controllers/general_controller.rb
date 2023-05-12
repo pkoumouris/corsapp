@@ -14,6 +14,24 @@ class GeneralController < ApplicationController
         render json: response.to_json
     end
 
+    def apple_pay_initiate_session
+        response = HTTParty.post("https://preview.wem.io/38864/webservices/securepay/applePayInitiateSession",
+            :body=>{"Requestor IP Address"=>request.remote_ip}.to_json,
+            :headers=>{
+                'Content-Type'=>'application/json'
+            })
+        render json: {
+            response: response['Apple Pay Initiate Session Output']
+        }.to_json
+    end
+
+    def apple_pay_wem_payment
+    end
+
+    #def securepay_payment
+
+    #end
+
     def wem_payment
         response = HTTParty.post(params[:tgt_url],
             :body => params[:tgt_body].to_json,
@@ -31,7 +49,8 @@ class GeneralController < ApplicationController
                         "email"=>params[:tgt_body]["SecurePay Email".to_sym],
                         "first_name"=>params[:tgt_body]["SecurePay Firstname".to_sym],
                         "last_name"=>params[:tgt_body]["SecurePay Lastname".to_sym],
-                        "payment_type_id"=>"1"
+                        "payment_type_id"=>"1",
+                        "tracking_code_id"=>params[:tgt_body]["Nation Builder Tracking ID".to_sym]
                     }
                 }
             }.to_json, :headers => {

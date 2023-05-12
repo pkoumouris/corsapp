@@ -7,4 +7,6 @@ Rails.application.routes.draw do
   get '/gnaf', to: 'general#gnaf'
   post '/payment', to: 'general#wem_payment'
   get '/getcampaigns', to: 'general#get_campaigns'
+  post '/applepay/initiatesession', to: 'general#apple_pay_initiate_session'
+  get '/nb_oauth_callback', to: 'nboauths#redirect_code'
 end
