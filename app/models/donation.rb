@@ -73,9 +73,10 @@ class Donation < ApplicationRecord
 
     ###################### SecurePay #########################
     SP_STATUSES = ['SP_SANDBOX_AUTH','SP_SANDBOX_APPLEPAY_AUTH','SP_LIVE_AUTH']
+    SP_MC_STATUSES = ['SP_SANDBOX_MC','SP_SANDBOX_APPLEPAY_MC','SP_LIVE_MC']
     SP_LIVE = !(ENV['SP_STATUS_INDEX'].nil? || ENV['SP_STATUS_INDEX'].to_i != 2)
     SP_AUTH = ENV['SP_STATUS_INDEX'].nil? ? 'MG9heGI5aThQOXZRZFhUc24zbDU6MGFCc0dVM3gxYmMtVUlGX3ZEQkEySnpqcENQSGpvQ1A3b0k2amlzcA==' : ENV[SP_STATUSES[ENV['SP_STATUS_INDEX'].to_i]]
-    SP_MERCHANT_CODE = ENV['SP_STATUS_INDEX'].nil? ? '5AR0055' : ENV[SP_STATUSES[ENV['SP_STATUS_INDEX'].to_i]]
+    SP_MERCHANT_CODE = ENV['SP_STATUS_INDEX'].nil? ? '5AR0055' : ENV[SP_MC_STATUSES[ENV['SP_STATUS_INDEX'].to_i]]
 
     def Donation.securepay_auth ## what is this vv is this correct link??
         response = HTTParty.post(SP_LIVE ? "https://payments.auspost.net.au/oauth/token" : "https://welcome.api2.sandbox.auspost.com.au/oauth/token",
