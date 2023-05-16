@@ -28,9 +28,59 @@ class GeneralController < ApplicationController
     def apple_pay_wem_payment
     end
 
-    #def securepay_payment
-
-    #end
+    def securepay_payment
+        # 1. Make the payment
+        donation = Donation.make_payment(params[:amount].to_i, params[:token], request.remote_ip)
+        if !donation.success
+            render json: {
+                success: false,
+                acl_error_code: 801,
+                errors: ["SecurePay error received - #{donation.gateway_response_code}: #{Donation.response_code_message(donation.gateway_response_code)}"]
+            }.to_json, status: 401
+            return nil
+        end
+        donation.fill_out_params(params)
+        # 2. Make the recurring schedule (if applicable)
+        recurring = nil
+        if params[:recurring]
+            begin
+                recurring = Recurring.make_recurring_payment(params[:amount].to_i, params[:token], request.remote_ip)
+            rescue
+                render json: {
+                    success: false,
+                    acl_error_code: 802,
+                    errors: ["Could not successfully execute recurring payment. Singular payment successful."]
+                }.to_json, status: 401
+                return nil
+            end
+        end
+        # 3. Handle external errors
+        save_failure = donation.id.nil? || (!recurring.nil? && recurring.id.nil?)
+        wem_failure = false # will change as time goes on
+        nb_failure = false # will change as time goes on
+        if save_failure || wem_failure || nb_failure
+            render json: {
+                success: false,
+                acl_error_code: General.failure_error_code(nb_failure, wem_failure, save_failure),
+                errors: [nb_failure ? "Could not save to NationBuilder." : nil, wem_failure ? "Could not save to WEM." : nil, save_failure ? "Could not save to CORS database." : nil].compact
+            }.to_json, status: 401
+            return nil
+        end
+        # 4. Return success
+        if params[:recurring]
+            render json: {
+                success: true,
+                orderId: donation.order_spid,
+                scheduleId: recurring.schedule_spid,
+                customerId: recurring.customer_code
+            }.to_json, status: 201
+        else
+            render json: {
+                success: true,
+                orderId: donation.order_spid
+            }.to_json, status: 201
+        end
+    end
 
     def wem_payment
         response = HTTParty.post(params[:tgt_url],

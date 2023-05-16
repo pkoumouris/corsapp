@@ -10,9 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_12_011032) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_15_054707) do
   create_table "donations", force: :cascade do |t|
     t.integer "amount_in_cents"
+    t.string "gateway_response_code"
+    t.string "origin_ip"
+    t.string "currency"
+    t.boolean "success"
+    t.string "bank_transaction_spid"
     t.string "email"
     t.string "first_name"
     t.string "last_name"
@@ -27,10 +32,20 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_12_011032) do
     t.boolean "imported_to_nb"
     t.datetime "imported_to_nb_at"
     t.boolean "exported"
-    t.string "order_id"
+    t.string "order_spid"
+    t.string "gnaf_address_identifier"
     t.string "other_data"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index "\"customer_code\"", name: "index_donations_on_customer_code"
+    t.index ["bank_transaction_spid"], name: "index_donations_on_bank_transaction_spid"
+    t.index ["email"], name: "index_donations_on_email"
+    t.index ["exported"], name: "index_donations_on_exported"
+    t.index ["gateway_response_code"], name: "index_donations_on_gateway_response_code"
+    t.index ["imported_to_nb"], name: "index_donations_on_imported_to_nb"
+    t.index ["order_spid"], name: "index_donations_on_order_spid"
+    t.index ["success"], name: "index_donations_on_success"
+    t.index ["tracking_code"], name: "index_donations_on_tracking_code"
   end
 
   create_table "generals", force: :cascade do |t|
@@ -40,6 +55,20 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_12_011032) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_generals_on_name", unique: true
+  end
+
+  create_table "recurrings", force: :cascade do |t|
+    t.string "customer_code"
+    t.string "schedule_spid"
+    t.integer "amount"
+    t.boolean "active"
+    t.string "last_digits"
+    t.integer "expiry_month"
+    t.integer "expiry_year"
+    t.string "card_scheme"
+    t.string "payment_interval_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
 end
