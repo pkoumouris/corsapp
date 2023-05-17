@@ -71,6 +71,10 @@ class Donation < ApplicationRecord
         end
     end
 
+    def Donation.election_donations_email_sum(email, tracking_code, time_start)
+        Donation.where(email: email, tracking_code: tracking_code, created_at: time_start..Time.now).map { |d| d.amount_in_cents }.sum
+    end
+
     ###################### SecurePay #########################
     SP_STATUSES = ['SP_SANDBOX_AUTH','SP_SANDBOX_APPLEPAY_AUTH','SP_LIVE_AUTH']
     SP_MC_STATUSES = ['SP_SANDBOX_MC','SP_SANDBOX_APPLEPAY_MC','SP_LIVE_MC']

@@ -29,6 +29,15 @@ class GeneralController < ApplicationController
     end
 
     def securepay_payment
+        # 0. Check if it violates election law
+        if params[:election_related] && (Donation.election_donations_email_sum(params[:email], params[:tracking_code], 9.months.ago) + params[:amount]*100 > params[:election_total_donation_limit] || params[:amount]*100 > params[:election_single_donation_limit])
+            render json: {
+                success: false,
+                acl_error_code: 811,
+                errors: ["Election law violation: can only have a maximum AUD #{params[:election_single_donation_limit]} donation for a single donation and AUD #{params[:election_total_donation_limit]} total donations for an election cycle."]
+            }.to_json, status: 401
+            return nil
+        end
         # 1. Make the payment
         donation = Donation.make_payment(params[:amount].to_i, params[:token], request.remote_ip)
         if !donation.success
