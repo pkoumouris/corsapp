@@ -30,7 +30,7 @@ class GeneralController < ApplicationController
 
     def securepay_payment
         # 0. Check if it violates election law
-        if params[:election_related] && (Donation.election_donations_email_sum(params[:email], params[:tracking_code], 9.months.ago) + params[:amount]*100 > params[:election_total_donation_limit] || params[:amount]*100 > params[:election_single_donation_limit])
+        if params[:election_related] && (Donation.election_donations_email_sum(params[:email], params[:tracking_code], 9.months.ago) + params[:amount] > params[:election_total_donation_limit]*100 || params[:amount] > params[:election_single_donation_limit]*100)
             render json: {
                 success: false,
                 acl_error_code: 811,
