@@ -1,4 +1,8 @@
 class General < ApplicationRecord
+    xcrypt = ActiveSupport::MessageEncryptor.new(Rails.application.secrets.secret_key_base[0..31])
+    CLIENT_ID = Rails.env.production? ? ENV['NB_CLIENT_ID'] : xcrypt.decrypt_and_verify('SXN8u9vl0davLbNR4axO6/9BI+zvakizdFm7Ori3vT9ppGLKBTZbemrjGrGarvXSObKyxrs=--cgiPU7DgeAO+hztT--MKD/LgFOrtNdZsY1rPngpQ==')
+    CLIENT_SECRET = Rails.env.production? ? ENV['NB_CLIENT_SECRET'] : xcrypt.decrypt_and_verify('tYpic0T4w9Wv/fP9Dvubjzj0qKCFPJ7nVRER0eEmGmQ8ki+sg1zECV+mc3e19LTUwSe/yxk=--5zbRz+cHjO1XLQtS--cLeCgMYQHjK38V7cLpyxlA==')
+
     def General.save_access_token(access_token, expires_in, refresh_token)
         if General.find_by(name: "NB_ACCESS_TOKEN").nil?
             General.new(name: "NB_ACCESS_TOKEN").save
@@ -33,6 +37,27 @@ class General < ApplicationRecord
             return nil
         else
             return crypt.decrypt_and_verify(rec.value)
+        end
+    end
+    
+    def General.refresh_access_token
+        refresh_token = General.refresh_token
+        if refresh_token.nil?
+            return nil
+        end
+        nb_resp = HTTParty.post("https://acl.nationbuilder.com/oauth/token",:body => {
+                "grant_type"=>"refresh_token",
+                "client_id"=>CLIENT_ID, # NEED TO BE ABSTRACTED OUT
+                "client_secret"=>CLIENT_SECRET, # NEED TO BE ABSTRACTED OUT
+                "refresh_token"=>refresh_token
+            }.to_json, :headers => {
+                'Content-Type'=>'application/json',
+                'Accept'=>'*/*'
+            })
+        if nb_resp.code == 200
+            General.save_access_token(nb_resp['access_token'], nb_resp['expires_in'], nb_resp['refresh_token'])
+        else
+            raise "Could not refresh token"
         end
     end
 

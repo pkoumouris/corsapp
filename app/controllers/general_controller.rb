@@ -67,6 +67,8 @@ class GeneralController < ApplicationController
         save_failure = donation.id.nil? || (!recurring.nil? && recurring.id.nil?)
         wem_failure = false # will change as time goes on
         nb_failure = false # will change as time goes on
+        # 3a. Make the calls
+        
         if save_failure || wem_failure || nb_failure
             render json: {
                 success: false,
@@ -79,6 +81,7 @@ class GeneralController < ApplicationController
         if params[:recurring]
             render json: {
                 success: true,
+                amount_in_cents: donation.amount_in_cents,
                 orderId: donation.order_spid,
                 scheduleId: recurring.schedule_spid,
                 customerId: recurring.customer_code
@@ -86,7 +89,8 @@ class GeneralController < ApplicationController
         else
             render json: {
                 success: true,
-                orderId: donation.order_spid
+                orderId: donation.order_spid,
+                amount_in_cents: donation.amount_in_cents
             }.to_json, status: 201
         end
     end

@@ -1,7 +1,8 @@
 class Donation < ApplicationRecord
 
-    CLIENT_ID = ENV['NB_CLIENT_ID']
-    CLIENT_SECRET = ENV['NB_CLIENT_SECRET']
+    xcrypt = ActiveSupport::MessageEncryptor.new(Rails.application.secrets.secret_key_base[0..31])
+    CLIENT_ID = Rails.env.production? ? ENV['NB_CLIENT_ID'] : xcrypt.decrypt_and_verify('SXN8u9vl0davLbNR4axO6/9BI+zvakizdFm7Ori3vT9ppGLKBTZbemrjGrGarvXSObKyxrs=--cgiPU7DgeAO+hztT--MKD/LgFOrtNdZsY1rPngpQ==')
+    CLIENT_SECRET = Rails.env.production? ? ENV['NB_CLIENT_SECRET'] : xcrypt.decrypt_and_verify('tYpic0T4w9Wv/fP9Dvubjzj0qKCFPJ7nVRER0eEmGmQ8ki+sg1zECV+mc3e19LTUwSe/yxk=--5zbRz+cHjO1XLQtS--cLeCgMYQHjK38V7cLpyxlA==')
     REDIRECT_URI = Rails.env.production? ? "https://cors.acl.org.au/nb_oauth_callback/" : "http://localhost:3000/nb_oauth_callback/"
     SITE_PATH = 'https://acl.nationbuilder.com'
     
@@ -73,6 +74,27 @@ class Donation < ApplicationRecord
 
     def Donation.election_donations_email_sum(email, tracking_code, time_start)
         Donation.where(email: email, tracking_code: tracking_code, created_at: time_start..Time.now).map { |d| d.amount_in_cents }.sum
+    end
+
+    ###################### NationBuilder #####################
+    def create_in_nationbuilder(amount, email, first_name, last_name, tracking_code_id)
+        nb_resp = HTTParty.post("https://acl.nationbuilder.com/api/v2/donations",:body => {
+                "data"=> {
+                    "type" => "donations",
+                    "attributes" => {
+                        "amount_in_cents"=>amount,
+                        "email"=>email,
+                        "first_name"=>first_name,
+                        "last_name"=>last_name,
+                        "payment_type_id"=>"1",
+                        "tracking_code_id"=>tracking_code_id
+                    }
+                }
+            }.to_json, :headers => {
+                'Content-Type'=>'application/json',
+                'Accept'=>'application/json',
+                'Authorization'=>ENV['NB_TEST_TOKEN']
+            })
     end
 
     ###################### SecurePay #########################
