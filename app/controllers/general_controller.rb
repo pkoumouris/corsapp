@@ -33,6 +33,7 @@ class GeneralController < ApplicationController
         if params[:election_related] && (Donation.election_donations_email_sum(params[:email], params[:tracking_code], 9.months.ago) + params[:amount] > params[:election_total_donation_limit]*100 || params[:amount] > params[:election_single_donation_limit]*100)
             render json: {
                 success: false,
+                recoverable: true,
                 acl_error_code: 811,
                 errors: ["Election law violation: can only have a maximum AUD #{params[:election_single_donation_limit]} donation for a single donation and AUD #{params[:election_total_donation_limit]} total donations for an election cycle."]
             }.to_json, status: 401
@@ -43,8 +44,9 @@ class GeneralController < ApplicationController
         if !donation.success
             render json: {
                 success: false,
+                recoverable: true,
                 acl_error_code: 801,
-                errors: ["SecurePay error received - #{donation.gateway_response_code}: #{Donation.response_code_message(donation.gateway_response_code)}"]
+                errors: ["SecurePay error received - #{donation.gateway_response_code}: #{Donation.response_code_message(donation.gateway_response_code.to_s)}"]
             }.to_json, status: 401
             return nil
         end
@@ -55,11 +57,13 @@ class GeneralController < ApplicationController
             begin
                 recurring = Recurring.make_recurring_payment(params[:amount].to_i, params[:token], request.remote_ip)
             rescue
+                # Here's a really tricky situation - send an email
                 render json: {
-                    success: false,
+                    success: true,
+                    recoverable: false,
                     acl_error_code: 802,
                     errors: ["Could not successfully execute recurring payment. Singular payment successful."]
-                }.to_json, status: 401
+                }.to_json, status: 201
                 return nil
             end
             donation.update_attribute(:recurring_id, recurring.id)
@@ -71,9 +75,13 @@ class GeneralController < ApplicationController
         # 3a. Make the calls
         nb_resp = donation.create_in_nationbuilder
         nb_failure = (nb_resp.code != 201)
+        if !nb_failure
+            donation.update_attribute(:nbid, nb_resp['data']['id'])
+        end
         if save_failure || wem_failure || nb_failure
             render json: {
-                success: false,
+                success: true,
+                recoverable: false,
                 acl_error_code: General.failure_error_code(nb_failure, wem_failure, save_failure),
                 errors: [nb_failure ? "Could not save to NationBuilder." : nil, wem_failure ? "Could not save to WEM." : nil, save_failure ? "Could not save to CORS database." : nil].compact
             }.to_json, status: 401
@@ -85,6 +93,7 @@ class GeneralController < ApplicationController
                 success: true,
                 amount_in_cents: donation.amount_in_cents,
                 orderId: donation.order_spid,
+                nb_donation_id: donation.nbid,
                 scheduleId: recurring.schedule_spid,
                 customerId: recurring.customer_code
             }.to_json, status: 201
@@ -92,6 +101,7 @@ class GeneralController < ApplicationController
             render json: {
                 success: true,
                 orderId: donation.order_spid,
+                nb_donation_id: donation.nbid,
                 amount_in_cents: donation.amount_in_cents
             }.to_json, status: 201
         end

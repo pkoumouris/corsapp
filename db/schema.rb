@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_19_004343) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_19_040147) do
   create_table "donations", force: :cascade do |t|
     t.integer "amount_in_cents"
     t.string "gateway_response_code"
@@ -38,7 +38,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_19_004343) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "recurring_id"
-    t.index "\"customer_code\"", name: "index_donations_on_customer_code"
+    t.string "nbid"
     t.index ["bank_transaction_spid"], name: "index_donations_on_bank_transaction_spid"
     t.index ["email"], name: "index_donations_on_email"
     t.index ["exported"], name: "index_donations_on_exported"
