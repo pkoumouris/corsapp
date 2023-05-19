@@ -36,7 +36,7 @@ class GeneralController < ApplicationController
                 recoverable: true,
                 acl_error_code: 811,
                 errors: ["Election law violation: can only have a maximum AUD #{params[:election_single_donation_limit]} donation for a single donation and AUD #{params[:election_total_donation_limit]} total donations for an election cycle."]
-            }.to_json, status: 401
+            }.to_json, status: 200
             return nil
         end
         # 1. Make the payment
@@ -47,7 +47,7 @@ class GeneralController < ApplicationController
                 recoverable: true,
                 acl_error_code: 801,
                 errors: ["SecurePay error received - #{donation.gateway_response_code}: #{Donation.response_code_message(donation.gateway_response_code.to_s)}"]
-            }.to_json, status: 401
+            }.to_json, status: 200
             return nil
         end
         donation.fill_out_params(params)
@@ -84,7 +84,7 @@ class GeneralController < ApplicationController
                 recoverable: false,
                 acl_error_code: General.failure_error_code(nb_failure, wem_failure, save_failure),
                 errors: [nb_failure ? "Could not save to NationBuilder." : nil, wem_failure ? "Could not save to WEM." : nil, save_failure ? "Could not save to CORS database." : nil].compact
-            }.to_json, status: 401
+            }.to_json, status: 201
             return nil
         end
         # 4. Return success
