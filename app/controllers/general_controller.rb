@@ -62,13 +62,15 @@ class GeneralController < ApplicationController
                 }.to_json, status: 401
                 return nil
             end
+            donation.update_attribute(:recurring_id, recurring.id)
         end
         # 3. Handle external errors
         save_failure = donation.id.nil? || (!recurring.nil? && recurring.id.nil?)
         wem_failure = false # will change as time goes on
         nb_failure = false # will change as time goes on
         # 3a. Make the calls
-        
+        nb_resp = donation.create_in_nationbuilder
+        nb_failure = (nb_resp.code != 201)
         if save_failure || wem_failure || nb_failure
             render json: {
                 success: false,

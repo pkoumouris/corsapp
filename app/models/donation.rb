@@ -1,5 +1,7 @@
 class Donation < ApplicationRecord
 
+    belongs_to :recurring, optional: true
+
     xcrypt = ActiveSupport::MessageEncryptor.new(Rails.application.secrets.secret_key_base[0..31])
     CLIENT_ID = Rails.env.production? ? ENV['NB_CLIENT_ID'] : xcrypt.decrypt_and_verify('SXN8u9vl0davLbNR4axO6/9BI+zvakizdFm7Ori3vT9ppGLKBTZbemrjGrGarvXSObKyxrs=--cgiPU7DgeAO+hztT--MKD/LgFOrtNdZsY1rPngpQ==')
     CLIENT_SECRET = Rails.env.production? ? ENV['NB_CLIENT_SECRET'] : xcrypt.decrypt_and_verify('tYpic0T4w9Wv/fP9Dvubjzj0qKCFPJ7nVRER0eEmGmQ8ki+sg1zECV+mc3e19LTUwSe/yxk=--5zbRz+cHjO1XLQtS--cLeCgMYQHjK38V7cLpyxlA==')
@@ -77,24 +79,58 @@ class Donation < ApplicationRecord
     end
 
     ###################### NationBuilder #####################
-    def create_in_nationbuilder(amount, email, first_name, last_name, tracking_code_id)
+    def create_in_nationbuilder
+        attrs = self.fill_in_tracking_code_id.nil? ? {
+            "amount_in_cents"=>self.amount_in_cents,
+            "email"=>self.email,
+            "first_name"=>self.first_name,
+            "last_name"=>self.last_name,
+            "payment_type_id"=>"1"
+        } : {
+            "amount_in_cents"=>self.amount_in_cents,
+            "email"=>self.email,
+            "first_name"=>self.first_name,
+            "last_name"=>self.last_name,
+            "payment_type_id"=>"1",
+            "donation_tracking_code_id"=>self.tracking_code
+        }
         nb_resp = HTTParty.post("https://acl.nationbuilder.com/api/v2/donations",:body => {
                 "data"=> {
                     "type" => "donations",
-                    "attributes" => {
-                        "amount_in_cents"=>amount,
-                        "email"=>email,
-                        "first_name"=>first_name,
-                        "last_name"=>last_name,
-                        "payment_type_id"=>"1",
-                        "tracking_code_id"=>tracking_code_id
-                    }
+                    "attributes" => attrs
                 }
             }.to_json, :headers => {
                 'Content-Type'=>'application/json',
                 'Accept'=>'application/json',
-                'Authorization'=>ENV['NB_TEST_TOKEN']
+                'Authorization'=>'Bearer '+General.access_token
             })
+        return nb_resp
+    end
+
+    def Donation.get_tracking_code_id(tracking_code_slug)
+        resp = HTTParty.get("https://acl.nationbuilder.com/api/v2/donation_tracking_codes?filter[slug]=#{tracking_code_slug}",
+            :headers=>{
+                'Accept'=>'application/json',
+                'Authorization'=>'Bearer '+General.access_token
+            })
+        if resp.code == 200
+            return resp['data'][0]['id']
+        else
+            return nil
+        end
+    end
+
+    def fill_in_tracking_code_id
+        if !self.tracking_code.nil? || self.tracking_code_slug.nil?
+            return nil
+        end
+
+        id = Donation.get_tracking_code_id(self.tracking_code_slug)
+        if id.nil?
+            return nil
+        end
+        self.update_attribute(:tracking_code, id)
+        return true
     end
 
     ###################### SecurePay #########################
@@ -169,7 +205,7 @@ class Donation < ApplicationRecord
             self.tracking_code = params[:tracking_code]
             self.save
         rescue
-            puts "Was unable to fill out params"
+            return nil
         end
     end
 

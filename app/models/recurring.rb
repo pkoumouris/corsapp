@@ -1,4 +1,7 @@
 class Recurring < ApplicationRecord
+
+    has_many :donations
+
     SP_STATUSES = ['SP_SANDBOX_AUTH','SP_SANDBOX_APPLEPAY_AUTH','SP_LIVE_AUTH']
     SP_LIVE = !(ENV['SP_STATUS_INDEX'].nil? || ENV['SP_STATUS_INDEX'].to_i != 2)
     SP_AUTH = ENV['SP_STATUS_INDEX'].nil? ? 'MG9heGI5aThQOXZRZFhUc24zbDU6MGFCc0dVM3gxYmMtVUlGX3ZEQkEySnpqcENQSGpvQ1A3b0k2amlzcA==' : ENV[SP_STATUSES[ENV['SP_STATUS_INDEX'].to_i]]

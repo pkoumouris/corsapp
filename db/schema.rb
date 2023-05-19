@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_15_054707) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_19_004343) do
   create_table "donations", force: :cascade do |t|
     t.integer "amount_in_cents"
     t.string "gateway_response_code"
@@ -37,6 +37,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_15_054707) do
     t.string "other_data"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "recurring_id"
     t.index "\"customer_code\"", name: "index_donations_on_customer_code"
     t.index ["bank_transaction_spid"], name: "index_donations_on_bank_transaction_spid"
     t.index ["email"], name: "index_donations_on_email"
@@ -44,6 +45,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_15_054707) do
     t.index ["gateway_response_code"], name: "index_donations_on_gateway_response_code"
     t.index ["imported_to_nb"], name: "index_donations_on_imported_to_nb"
     t.index ["order_spid"], name: "index_donations_on_order_spid"
+    t.index ["recurring_id"], name: "index_donations_on_recurring_id"
     t.index ["success"], name: "index_donations_on_success"
     t.index ["tracking_code"], name: "index_donations_on_tracking_code"
   end
@@ -71,4 +73,5 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_15_054707) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "donations", "recurrings"
 end
