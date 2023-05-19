@@ -46,7 +46,7 @@ class GeneralController < ApplicationController
                 success: false,
                 recoverable: true,
                 acl_error_code: 801,
-                errors: ["SecurePay error received - #{donation.gateway_response_code}: #{Donation.response_code_message(donation.gateway_response_code.to_s)}"]
+                errors: ["#{Donation.response_code_message(donation.gateway_response_code.to_s)}"]
             }.to_json, status: 200
             return nil
         end
