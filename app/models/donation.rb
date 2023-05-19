@@ -202,7 +202,7 @@ class Donation < ApplicationRecord
             self.phone_number = params[:phone_number]
             self.send_email_updates = params[:send_email_updates]
             self.recurring = params[:recurring]
-            self.tracking_code = params[:tracking_code]
+            self.tracking_code_slug = params[:tracking_code]
             self.save
         rescue
             return nil

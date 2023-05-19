@@ -57,8 +57,8 @@ class Recurring < ApplicationRecord
             'Authorization'=>'Bearer '+General.sp_access_token
         })
         if ![200,201].include?(response.code)
-            raise "Make Recurring Payment failed"
-            #return response
+            #raise "Make Recurring Payment failed"
+            return response
         end
         recurring.active = true
         recurring.amount = amount
