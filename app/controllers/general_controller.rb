@@ -72,7 +72,7 @@ class GeneralController < ApplicationController
         save_failure = donation.id.nil? || (!recurring.nil? && recurring.id.nil?)
         wem_failure = false # will change as time goes on
         nb_failure = false # will change as time goes on
-        # 3a. Make the calls
+        # 3a. Make the calls to NB
         nb_resp = donation.create_in_nationbuilder
         nb_failure = (nb_resp.code != 201)
         if !nb_failure
