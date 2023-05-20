@@ -183,7 +183,7 @@ class Donation < ApplicationRecord
             puts response
             raise "Not successful"
         end
-        if ['00','11','77','16'].include?(response['gatewayResponseCode'])
+        if ['00','08','11','77','16'].include?(response['gatewayResponseCode'])
             donation = Donation.new(amount_in_cents: amount, gateway_response_code: '00', success: true, currency: 'AUD', recurring: false, order_spid: response['orderId'], bank_transaction_spid: response['bankTransactionId'])
             return donation
         end
