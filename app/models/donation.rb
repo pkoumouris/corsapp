@@ -209,6 +209,20 @@ class Donation < ApplicationRecord
         end
     end
 
+    #def update_nb_user_address
+    #end
+
+    def Donation.get_env_var_stubs
+        return {
+            nb_client_id: CLIENT_ID[0..4],
+            nb_client_secret: CLIENT_SECRET[0..4],
+            sp_status: SP_STATUSES[ENV['SP_STATUS_INDEX'].to_i],
+            sp_live: SP_LIVE,
+            sp_auth: SP_AUTH[0..4],
+            sp_merchant_code: SP_MERCHANT_CODE
+        }
+    end
+
     def Donation.response_code_message(response_code)
         {
             '00'=>'Approved or completed successfully.',

@@ -9,4 +9,5 @@ Rails.application.routes.draw do
   get '/getcampaigns', to: 'general#get_campaigns'
   post '/applepay/initiatesession', to: 'general#apple_pay_initiate_session'
   get '/nb_oauth_callback', to: 'nboauths#redirect_code'
+  get '/varstubs', to: 'general#see_env_var_stubs'
 end

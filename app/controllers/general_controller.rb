@@ -7,6 +7,18 @@ class GeneralController < ApplicationController
         }.to_json
     end
 
+    def see_env_var_stubs
+        if Digest::SHA256.hexdigest(params[:token]) == 'a79cd472a5ed551a9453f3cb4b3ec789b0a4a8ca5e0528fa71b70c0c188a6c55'
+            render json: {
+                var_stubs: Donation.get_env_var_stubs
+            }.to_json
+        else
+            render json: {
+                success: false
+            }.to_json, status: 401
+        end
+    end
+
     def gnaf
         response = HTTParty.get("https://api.psma.com.au/v2/addresses/geocoder?additionalProperties=localGovernmentArea,stateElectorate,commonwealthElectorate,asgsMain&address=#{params[:address]}",
             :headers => {"Authorization"=>ENV['GNAF_API_KEY']})
