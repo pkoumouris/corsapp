@@ -61,6 +61,22 @@ class General < ApplicationRecord
         end
     end
 
+    ######## NB PEOPLE
+    def General.find_nb_person_by_email(email)
+        resp = HTTParty.get("https://acl.nationbuilder.com/api/v1/people/match?email=#{email}",
+            :headers => {
+                'Authorization'=>'Bearer '+General.access_token,
+                'Accept'=>'*/*',
+                'Connection'=>'keep-alive'
+            })
+        #return resp
+        return resp.code == 200 ? resp['person']['id'] : nil
+    end
+
+    #def General.create_nb_person(first_name, last_name, email)
+
+    #end
+
     ######## SECUREPAY
 
     def General.save_sp_access_token(access_token, expires_in)
