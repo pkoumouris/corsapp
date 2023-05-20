@@ -141,7 +141,7 @@ class Donation < ApplicationRecord
     SP_MERCHANT_CODE = ENV['SP_STATUS_INDEX'].nil? ? '5AR0055' : ENV[SP_MC_STATUSES[ENV['SP_STATUS_INDEX'].to_i]]
 
     def Donation.securepay_auth ## what is this vv is this correct link??
-        response = HTTParty.post(SP_LIVE ? "https://payments.auspost.net.au/oauth/token" : "https://welcome.api2.sandbox.auspost.com.au/oauth/token",
+        response = HTTParty.post(SP_LIVE ? "https://welcome.api2.auspost.com.au/oauth/token" : "https://welcome.api2.sandbox.auspost.com.au/oauth/token",
             :body => {
                 'grant_type'=>'client_credentials',
                 'audience'=>'https://api.payments.auspost.com.au'
