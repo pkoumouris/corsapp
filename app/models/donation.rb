@@ -219,7 +219,10 @@ class Donation < ApplicationRecord
             sp_status: SP_STATUSES[ENV['SP_STATUS_INDEX'].to_i],
             sp_live: SP_LIVE,
             sp_auth: SP_AUTH[0..4],
-            sp_merchant_code: SP_MERCHANT_CODE
+            sp_merchant_code: SP_MERCHANT_CODE,
+            nb_access_token: General.access_token[0..6],
+            nb_refresh_token: General.refresh_token[0..6],
+            nb_access_token_expiry: Time.at(General.find_by(name:"NB_EXPIRES_AT").value.to_i).in_time_zone('Australia/Melbourne').rfc2822
         }
     end
 
