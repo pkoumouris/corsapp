@@ -1,4 +1,5 @@
 class GeneralController < ApplicationController
+    RECURRING_SLUG = "ov_w_monthly_sp"
     skip_forgery_protection
 
     def test
@@ -66,6 +67,8 @@ class GeneralController < ApplicationController
         # 2. Make the recurring schedule (if applicable)
         recurring = nil
         if params[:recurring]
+            donation.update_attribute(:recurring, true) # this is a bit dirty
+            donation.update_attribute(:tracking_code_slug, Donation.recurring_slug) # dirty
             begin
                 recurring = Recurring.make_recurring_payment(params[:amount].to_i, params[:token], request.remote_ip)
             rescue
