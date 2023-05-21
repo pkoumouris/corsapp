@@ -125,7 +125,7 @@ class Donation < ApplicationRecord
             return nil
         end
 
-        id = Donation.get_tracking_code_id(self.tracking_code_slug)
+        id = Donation.get_tracking_code_id(self.recurring ? "ov_w_monthly" : self.tracking_code_slug)
         if id.nil?
             return nil
         end
