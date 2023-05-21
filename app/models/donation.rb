@@ -85,14 +85,16 @@ class Donation < ApplicationRecord
             "email"=>self.email,
             "first_name"=>self.first_name,
             "last_name"=>self.last_name,
-            "payment_type_id"=>"1"
+            "payment_type_id"=>"1",
+            "note"=>self.order_spid
         } : {
             "amount_in_cents"=>self.amount_in_cents,
             "email"=>self.email,
             "first_name"=>self.first_name,
             "last_name"=>self.last_name,
             "payment_type_id"=>"1",
-            "donation_tracking_code_id"=>self.tracking_code
+            "donation_tracking_code_id"=>self.tracking_code,
+            "note"=>self.order.spid
         }
         nb_resp = HTTParty.post("https://acl.nationbuilder.com/api/v2/donations",:body => {
                 "data"=> {
@@ -125,7 +127,7 @@ class Donation < ApplicationRecord
             return nil
         end
 
-        id = Donation.get_tracking_code_id(self.recurring ? "ov_w_monthly" : self.tracking_code_slug)
+        id = Donation.get_tracking_code_id(self.recurring ? "ov_w_monthly_sp" : self.tracking_code_slug)
         if id.nil?
             return nil
         end

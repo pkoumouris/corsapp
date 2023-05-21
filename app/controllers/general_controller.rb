@@ -41,6 +41,10 @@ class GeneralController < ApplicationController
     end
 
     def securepay_payment
+        render json: {
+            params: params
+        }.to_json
+        return nil
         # 0. Check if it violates election law
         if params[:election_related] && (Donation.election_donations_email_sum(params[:email], params[:tracking_code], 9.months.ago) + params[:amount] > params[:election_total_donation_limit]*100 || params[:amount] > params[:election_single_donation_limit]*100)
             render json: {
