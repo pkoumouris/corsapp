@@ -237,6 +237,29 @@ class Donation < ApplicationRecord
         }
     end
 
+    def add_tag_to_person(tag_id)
+        if self.nbid.nil?
+            return nil
+        end
+        response = HTTParty.post("https://acl.nationbuilder.com/api/v2/signup_taggings",
+            :body => {
+                'data'=>{
+                    'type'=>'signup_taggings',
+                    'attributes'=>{
+                        'signup_id'=>self.nbid,
+                        'tag_id'=>tag_id
+                    }
+                }
+            }.to_json,
+            :headers => {
+                'Content-Type'=>'application/json',
+                'Accept'=>'application/json',
+                'Authorization'=>'Bearer '+General.access_token
+            })
+        return response
+    end
+    
+
     def Donation.response_code_message(response_code)
         {
             '00'=>'Approved or completed successfully.',
