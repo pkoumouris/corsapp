@@ -94,7 +94,7 @@ class Donation < ApplicationRecord
             "last_name"=>self.last_name,
             "payment_type_id"=>"1",
             "donation_tracking_code_id"=>self.tracking_code,
-            "note"=>self.order.spid
+            "note"=>self.order_spid
         }
         nb_resp = HTTParty.post("https://acl.nationbuilder.com/api/v2/donations",:body => {
                 "data"=> {
