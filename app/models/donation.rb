@@ -204,8 +204,8 @@ class Donation < ApplicationRecord
             self.gnaf_address_identifier = params[:gnaf_address_id]
             self.phone_number = params[:phone_number]
             self.send_email_updates = params[:send_email_updates]
-            self.recurring = params[:recurring]
-            self.tracking_code_slug = !!params[:recurring] ? RECURRING_SLUG : params[:tracking_code]
+            self.is_recurring = params[:recurring]
+            self.tracking_code_slug = self.is_recurring ? RECURRING_SLUG : params[:tracking_code]
             self.save
         rescue
             return nil
