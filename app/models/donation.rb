@@ -110,8 +110,10 @@ class Donation < ApplicationRecord
             })
         if self.is_recurring
             begin
+                puts "Here in the add_tag part"
                 suid = nb_resp['data']['relationships']['recruiter']['links']['related'].split('/').last
-                Donation.add_tag_to_person(suid, tag_id)
+                resp2 = Donation.add_tag_to_person(suid, tag_id)
+                self.update_attribute(:other_data, resp2.code.to_s)
             rescue
                 puts "Aw schucks, couldn't add the tag"
             end
