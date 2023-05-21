@@ -7,6 +7,7 @@ class Donation < ApplicationRecord
     CLIENT_SECRET = Rails.env.production? ? ENV['NB_CLIENT_SECRET'] : xcrypt.decrypt_and_verify('tYpic0T4w9Wv/fP9Dvubjzj0qKCFPJ7nVRER0eEmGmQ8ki+sg1zECV+mc3e19LTUwSe/yxk=--5zbRz+cHjO1XLQtS--cLeCgMYQHjK38V7cLpyxlA==')
     REDIRECT_URI = Rails.env.production? ? "https://cors.acl.org.au/nb_oauth_callback/" : "http://localhost:3000/nb_oauth_callback/"
     SITE_PATH = 'https://acl.nationbuilder.com'
+    RECURRING_SLUG = "ov_w_monthly_sp"
     
     def Donation.get_auth_page_url
         #site_path = 'https://acl.nationbuilder.com'
@@ -127,7 +128,7 @@ class Donation < ApplicationRecord
             return nil
         end
 
-        id = Donation.get_tracking_code_id(self.recurring ? "ov_w_monthly_sp" : self.tracking_code_slug)
+        id = Donation.get_tracking_code_id(self.tracking_code_slug)
         if id.nil?
             return nil
         end
@@ -204,7 +205,7 @@ class Donation < ApplicationRecord
             self.phone_number = params[:phone_number]
             self.send_email_updates = params[:send_email_updates]
             self.recurring = params[:recurring]
-            self.tracking_code_slug = params[:tracking_code]
+            self.tracking_code_slug = !!params[:recurring] ? RECURRING_SLUG : params[:tracking_code]
             self.save
         rescue
             return nil
