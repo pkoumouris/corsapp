@@ -92,9 +92,6 @@ class GeneralController < ApplicationController
         nb_failure = (nb_resp.code != 201)
         if !nb_failure
             donation.update_attribute(:nbid, nb_resp['data']['id'])
-            if donation.is_recurring
-                donation.add_tag_to_person('2556')
-            end
         end
         if save_failure || wem_failure || nb_failure
             render json: {

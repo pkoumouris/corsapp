@@ -108,6 +108,14 @@ class Donation < ApplicationRecord
                 'Accept'=>'application/json',
                 'Authorization'=>'Bearer '+General.access_token
             })
+        if self.is_recurring
+            begin
+                suid = nb_resp['data']['relationships']['recruiter']['links']['related'].split('/').last
+                Donation.add_tag_to_person(suid, tag_id)
+            rescue
+                puts "Aw schucks, couldn't add the tag"
+            end
+        end
         return nb_resp
     end
 
@@ -237,16 +245,13 @@ class Donation < ApplicationRecord
         }
     end
 
-    def add_tag_to_person(tag_id)
-        if self.nbid.nil?
-            return nil
-        end
+    def Donation.add_tag_to_person(person_id, tag_id)
         response = HTTParty.post("https://acl.nationbuilder.com/api/v2/signup_taggings",
             :body => {
                 'data'=>{
                     'type'=>'signup_taggings',
                     'attributes'=>{
-                        'signup_id'=>self.nbid,
+                        'signup_id'=>person_id,
                         'tag_id'=>tag_id
                     }
                 }
@@ -257,6 +262,7 @@ class Donation < ApplicationRecord
                 'Authorization'=>'Bearer '+General.access_token
             })
         puts "Add tag to person response code: #{response.code.to_s}"
+        puts "Add tag to person ID: #{response.code == 201 ? response['data']['id'] : nil}"
         return response
     end
     
