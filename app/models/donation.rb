@@ -9,6 +9,7 @@ class Donation < ApplicationRecord
     SITE_PATH = 'https://acl.nationbuilder.com'
     RECURRING_SLUG = "ov_w_monthly_sp"
     RECURRING_ID = "3564"
+    RECURRING_TAG_ID = "2556"
     
     def Donation.get_auth_page_url
         #site_path = 'https://acl.nationbuilder.com'
@@ -112,7 +113,7 @@ class Donation < ApplicationRecord
             begin
                 puts "Here in the add_tag part"
                 suid = nb_resp['data']['relationships']['recruiter']['links']['related'].split('/').last
-                resp2 = Donation.add_tag_to_person(suid, tag_id)
+                resp2 = Donation.add_tag_to_person(suid, RECURRING_TAG_ID)
                 if !resp2.nil?
                     self.update_attribute(:other_data, resp2.code.to_s)
                 end
