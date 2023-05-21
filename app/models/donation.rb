@@ -113,7 +113,9 @@ class Donation < ApplicationRecord
                 puts "Here in the add_tag part"
                 suid = nb_resp['data']['relationships']['recruiter']['links']['related'].split('/').last
                 resp2 = Donation.add_tag_to_person(suid, tag_id)
-                self.update_attribute(:other_data, resp2.code.to_s)
+                if !resp2.nil?
+                    self.update_attribute(:other_data, resp2.code.to_s)
+                end
             rescue
                 puts "Aw schucks, couldn't add the tag"
             end
