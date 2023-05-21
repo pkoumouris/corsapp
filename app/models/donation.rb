@@ -8,6 +8,7 @@ class Donation < ApplicationRecord
     REDIRECT_URI = Rails.env.production? ? "https://cors.acl.org.au/nb_oauth_callback/" : "http://localhost:3000/nb_oauth_callback/"
     SITE_PATH = 'https://acl.nationbuilder.com'
     RECURRING_SLUG = "ov_w_monthly_sp"
+    RECURRING_ID = "3564"
     
     def Donation.get_auth_page_url
         #site_path = 'https://acl.nationbuilder.com'
@@ -117,7 +118,7 @@ class Donation < ApplicationRecord
                 'Authorization'=>'Bearer '+General.access_token
             })
         if resp.code == 200
-            return resp['data'][0]['id']
+            return resp['data'].length == 0 ? nil : resp['data'][0]['id']
         else
             return nil
         end
@@ -127,10 +128,13 @@ class Donation < ApplicationRecord
         if !self.tracking_code.nil? || self.tracking_code_slug.nil?
             return nil
         end
-
-        id = Donation.get_tracking_code_id(self.tracking_code_slug)
-        if id.nil?
-            return nil
+        if self.is_recurring
+            id = RECURRING_ID
+        else
+            id = Donation.get_tracking_code_id(self.tracking_code_slug)
+            if id.nil?
+                return nil
+            end
         end
         self.update_attribute(:tracking_code, id)
         return true
