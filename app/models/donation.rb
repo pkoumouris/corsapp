@@ -256,6 +256,7 @@ class Donation < ApplicationRecord
                 'Accept'=>'application/json',
                 'Authorization'=>'Bearer '+General.access_token
             })
+        puts "Add tag to person response code: #{response.code.to_s}"
         return response
     end
     
