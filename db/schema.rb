@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_19_040147) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_21_121711) do
   create_table "donations", force: :cascade do |t|
     t.integer "amount_in_cents"
     t.string "gateway_response_code"
@@ -28,7 +28,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_19_040147) do
     t.boolean "send_email_updates"
     t.string "campaign"
     t.string "campaign_name"
-    t.boolean "recurring"
     t.boolean "imported_to_nb"
     t.datetime "imported_to_nb_at"
     t.boolean "exported"
@@ -39,6 +38,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_19_040147) do
     t.datetime "updated_at", null: false
     t.integer "recurring_id"
     t.string "nbid"
+    t.boolean "is_recurring"
     t.index ["bank_transaction_spid"], name: "index_donations_on_bank_transaction_spid"
     t.index ["email"], name: "index_donations_on_email"
     t.index ["exported"], name: "index_donations_on_exported"
