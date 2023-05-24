@@ -88,14 +88,14 @@ class Donation < ApplicationRecord
             "email"=>self.email,
             "first_name"=>self.first_name,
             "last_name"=>self.last_name,
-            "payment_type_id"=>"1",
+            "payment_type_id"=>"2",
             "note"=>self.order_spid
         } : {
             "amount_in_cents"=>self.amount_in_cents,
             "email"=>self.email,
             "first_name"=>self.first_name,
             "last_name"=>self.last_name,
-            "payment_type_id"=>"1",
+            "payment_type_id"=>"2",
             "donation_tracking_code_id"=>self.tracking_code,
             "note"=>self.order_spid
         }
