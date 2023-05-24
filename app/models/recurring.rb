@@ -8,12 +8,12 @@ class Recurring < ApplicationRecord
     SP_AUTH = ENV['SP_STATUS_INDEX'].nil? ? 'MG9heGI5aThQOXZRZFhUc24zbDU6MGFCc0dVM3gxYmMtVUlGX3ZEQkEySnpqcENQSGpvQ1A3b0k2amlzcA==' : ENV[SP_STATUSES[ENV['SP_STATUS_INDEX'].to_i]]
     SP_MERCHANT_CODE = ENV['SP_STATUS_INDEX'].nil? ? '5AR0055' : ENV[SP_MC_STATUSES[ENV['SP_STATUS_INDEX'].to_i]]
 
-    def Recurring.create_payment_instrument(token, ip)
+    def Recurring.create_payment_instrument(token, ip, sp_env) # SP env toggle
         customer_code = SecureRandom.alphanumeric
-        response = HTTParty.post(SP_LIVE ? "https://payments.auspost.net.au/v2/customers/#{customer_code}/payment-instruments/token" : "https://payments-stest.npe.auspost.zone/v2/customers/#{customer_code}/payment-instruments/token",
+        response = HTTParty.post(sp_env == "LIVE" && SP_LIVE ? "https://payments.auspost.net.au/v2/customers/#{customer_code}/payment-instruments/token" : "https://payments-stest.npe.auspost.zone/v2/customers/#{customer_code}/payment-instruments/token",
         :headers => {
             'Content-Type'=>'application/json',
-            'Authorization'=>'Bearer '+General.sp_access_token,
+            'Authorization'=>'Bearer '+General.sp_access_token(sp_env),
             'token'=>token,
             'ip'=>ip
         })
@@ -29,22 +29,22 @@ class Recurring < ApplicationRecord
     #    response = HTTParty.delete(SP_LIVE ? "https://payments.auspost.net.au/v2/customers/#{self.customer_code}/payment-instruments/token" : "https://payments-stest.npe.auspost.zone/v2/customers/#{self.customer_code}/payment-instruments/token",
     #    :headers => {
     #       'Content-Type'=>'application/json',
-    #       'Authorization'=>'Bearer '+General.sp_access_token,
+    #       'Authorization'=>'Bearer '+General.sp_access_token(sp_env),
     #        'token'=>token,
     #        'ip'=>ip
     #    })
     #    return response
     #end
 
-    def Recurring.make_recurring_payment(amount, token, ip)
-        recurring = Recurring.create_payment_instrument(token, ip)
+    def Recurring.make_recurring_payment(amount, token, ip, sp_env) # SP env toggle
+        recurring = Recurring.create_payment_instrument(token, ip, sp_env)
         refnum = SecureRandom.alphanumeric
-        response = HTTParty.post(SP_LIVE ? "https://payments.auspost.net.au/v2/payments/schedules/recurring" : "https://payments-stest.npe.auspost.zone/v2/payments/schedules/recurring",
+        response = HTTParty.post(sp_env == "LIVE" && SP_LIVE ? "https://payments.auspost.net.au/v2/payments/schedules/recurring" : "https://payments-stest.npe.auspost.zone/v2/payments/schedules/recurring",
         :body => {
             'ip'=>ip,
             'referenceNumber'=>refnum,
             'token'=>token,
-            'merchantCode'=>SP_MERCHANT_CODE,
+            'merchantCode'=>SP_LIVE && sp_env == "LIVE" ? SP_MERCHANT_CODE : "5AR0055",
             'customerCode'=>recurring.customer_code,
             'amount'=>amount,
             'recurringTransaction'=>true,
@@ -55,10 +55,11 @@ class Recurring < ApplicationRecord
         }.to_json,
         :headers => {
             'Content-Type'=>'application/json',
-            'Authorization'=>'Bearer '+General.sp_access_token
+            'Authorization'=>'Bearer '+General.sp_access_token(sp_env)
         })
         if ![200,201].include?(response.code)
             #raise "Make Recurring Payment failed"
+            puts "Response code: #{response.code}"
             return response
         end
         recurring.active = true

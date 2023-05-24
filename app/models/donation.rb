@@ -160,8 +160,8 @@ class Donation < ApplicationRecord
     SP_AUTH = ENV['SP_STATUS_INDEX'].nil? ? 'MG9heGI5aThQOXZRZFhUc24zbDU6MGFCc0dVM3gxYmMtVUlGX3ZEQkEySnpqcENQSGpvQ1A3b0k2amlzcA==' : ENV[SP_STATUSES[ENV['SP_STATUS_INDEX'].to_i]]
     SP_MERCHANT_CODE = ENV['SP_STATUS_INDEX'].nil? ? '5AR0055' : ENV[SP_MC_STATUSES[ENV['SP_STATUS_INDEX'].to_i]]
 
-    def Donation.securepay_auth ## what is this vv is this correct link??
-        response = HTTParty.post(SP_LIVE ? "https://welcome.api2.auspost.com.au/oauth/token" : "https://welcome.api2.sandbox.auspost.com.au/oauth/token",
+    def Donation.securepay_auth(sp_env) # SP env toggle
+        response = HTTParty.post(sp_env == "LIVE" ? "https://welcome.api2.auspost.com.au/oauth/token" : "https://welcome.api2.sandbox.auspost.com.au/oauth/token",
             :body => {
                 'grant_type'=>'client_credentials',
                 'audience'=>'https://api.payments.auspost.com.au'
@@ -172,7 +172,11 @@ class Donation < ApplicationRecord
                 'Authorization'=>'Basic '+SP_AUTH
             })
         if response.code == 200
-            General.save_sp_access_token(response['access_token'], response['expires_in'])
+            if sp_env == "LIVE"
+                General.save_sp_access_token(response['access_token'], response['expires_in'])
+            else
+                General.save_sandbox_sp_access_token(response['access_token'], response['expires_in'])
+            end
             return response
         else
             puts response.code
@@ -181,14 +185,14 @@ class Donation < ApplicationRecord
         end
     end
 
-    def Donation.make_payment(amount, token, ip)
+    def Donation.make_payment(amount, token, ip, sp_env) # SP env toggle
         order_id = SecureRandom.uuid
         idem_key = SecureRandom.uuid
-        puts "Merchant code: "+SP_MERCHANT_CODE
-        response = HTTParty.post(SP_LIVE ? "https://payments.auspost.net.au/v2/payments" : "https://payments-stest.npe.auspost.zone/v2/payments",
+        #puts "Merchant code: "+SP_MERCHANT_CODE
+        response = HTTParty.post(SP_LIVE && sp_env == "LIVE" ? "https://payments.auspost.net.au/v2/payments" : "https://payments-stest.npe.auspost.zone/v2/payments",
             :body => {
                 'amount'=>amount,
-                'merchantCode'=>SP_MERCHANT_CODE,
+                'merchantCode'=>SP_LIVE && sp_env == "LIVE" ? SP_MERCHANT_CODE : "5AR0055",
                 'token'=>token,
                 'ip'=>ip,
                 'orderId'=>order_id
@@ -196,7 +200,7 @@ class Donation < ApplicationRecord
             :headers => {
                 'Content-Type'=>'application/json',
                 'Idempotency-Key'=>idem_key,
-                'Authorization'=>'Bearer '+General.sp_access_token
+                'Authorization'=>'Bearer '+General.sp_access_token(sp_env)
             })
         if response.code != 200 && response.code != 201
             puts "The following response code was found: " + response.code.to_s
@@ -204,10 +208,10 @@ class Donation < ApplicationRecord
             raise "Not successful"
         end
         if ['00','08','11','77','16'].include?(response['gatewayResponseCode'])
-            donation = Donation.new(amount_in_cents: amount, gateway_response_code: '00', success: true, currency: 'AUD', order_spid: response['orderId'], bank_transaction_spid: response['bankTransactionId'])
+            donation = Donation.new(amount_in_cents: amount, gateway_response_code: '00', success: true, currency: 'AUD', order_spid: response['orderId'], bank_transaction_spid: response['bankTransactionId'], test: sp_env != "LIVE")
             return donation
         end
-        donation = Donation.new(amount_in_cents: amount, gateway_response_code: response['gatewayResponseCode'], success: false, currency: 'AUD', order_spid: response['orderId'], bank_transaction_spid: response['bankTransactionId'])
+        donation = Donation.new(amount_in_cents: amount, gateway_response_code: response['gatewayResponseCode'], success: false, currency: 'AUD', order_spid: response['orderId'], bank_transaction_spid: response['bankTransactionId'], test: sp_env != "LIVE")
         return donation
     end
 
@@ -349,5 +353,31 @@ class Donation < ApplicationRecord
             '98'=>'MAC error',
             '99'=>'Reserved for national use'
         }[response_code]
+    end
+
+    #### ANCILLARY METHODS
+    def rectify_payment_method_type
+        response = HTTParty.put("https://acl.nationbuilder.com/api/v1/donations/#{self.nbid}",
+            :body => {
+                'donation'=>{
+                    'payment_type'=>'Credit/Debit Card'
+                }
+            }.to_json,
+            :headers => {
+                'Content-Type'=>'application/json',
+                'Accept'=>'application/json',
+                'Authorization'=>'Bearer '+General.access_token
+            })
+        return response
+    end
+
+    def delete_in_nationbuilder
+        response = HTTParty.delete("https://acl.nationbuilder.com/api/v2/donations/#{self.nbid}",
+            :headers => {
+                'Content-Type'=>'application/json',
+                'Accept'=>'application/json',
+                'Authorization'=>'Bearer '+General.access_token
+            })
+        return response
     end
 end

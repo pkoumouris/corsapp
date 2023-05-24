@@ -93,16 +93,28 @@ class General < ApplicationRecord
         General.find_by(name: "SP_EXPIRES_AT").update_attribute(:value, (Time.now + expires_in.seconds).to_i.to_s)
     end
 
-    def General.sp_has_expired?
-        ea = General.find_by(name: "SP_EXPIRES_AT")
+    def General.save_sandbox_sp_access_token(access_token, expires_in)
+        if General.find_by(name: "SP_SANDBOX_ACCESS_TOKEN").nil?
+            General.new(name:"SP_SANDBOX_ACCESS_TOKEN").save
+        end
+        if General.find_by(name:"SP_SANDBOX_EXPIRES_AT").nil?
+            General.new(name:"SP_SANDBOX_EXPIRES_AT").save
+        end
+        crypt = ActiveSupport::MessageEncryptor.new(Rails.application.secrets.secret_key_base[0..31])
+        General.find_by(name:"SP_SANDBOX_ACCESS_TOKEN").update_attribute(:value, crypt.encrypt_and_sign(access_token))
+        General.find_by(name: "SP_SANDBOX_EXPIRES_AT").update_attribute(:value, (Time.now + expires_in.seconds).to_i.to_s)
+    end
+
+    def General.sp_has_expired?(sp_env)
+        ea = General.find_by(name: sp_env == "LIVE" ? "SP_EXPIRES_AT" : "SP_SANDBOX_EXPIRES_AT")
         return ea.nil? || Time.at(ea.value.to_i) < Time.now
     end
     
-    def General.sp_access_token # if expired, it updates it
-        if General.sp_has_expired?
-            Donation.securepay_auth
+    def General.sp_access_token(sp_env) # if expired, it updates it
+        if General.sp_has_expired?(sp_env)
+            Donation.securepay_auth(sp_env)
         end
-        sat = General.find_by(name: "SP_ACCESS_TOKEN")
+        sat = General.find_by(name: sp_env == "LIVE" ? "SP_ACCESS_TOKEN" : "SP_SANDBOX_ACCESS_TOKEN")
         crypt = ActiveSupport::MessageEncryptor.new(Rails.application.secrets.secret_key_base[0..31])
         return sat.nil? ? nil : crypt.decrypt_and_verify(sat.value)
     end

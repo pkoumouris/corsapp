@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_21_121711) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_22_042124) do
   create_table "donations", force: :cascade do |t|
     t.integer "amount_in_cents"
     t.string "gateway_response_code"
@@ -39,11 +39,14 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_21_121711) do
     t.integer "recurring_id"
     t.string "nbid"
     t.boolean "is_recurring"
+    t.boolean "test"
+    t.string "signup_nbid"
     t.index ["bank_transaction_spid"], name: "index_donations_on_bank_transaction_spid"
     t.index ["email"], name: "index_donations_on_email"
     t.index ["exported"], name: "index_donations_on_exported"
     t.index ["gateway_response_code"], name: "index_donations_on_gateway_response_code"
     t.index ["imported_to_nb"], name: "index_donations_on_imported_to_nb"
+    t.index ["nbid"], name: "index_donations_on_nbid"
     t.index ["order_spid"], name: "index_donations_on_order_spid"
     t.index ["recurring_id"], name: "index_donations_on_recurring_id"
     t.index ["success"], name: "index_donations_on_success"
@@ -71,6 +74,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_21_121711) do
     t.string "payment_interval_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "test"
   end
 
   add_foreign_key "donations", "recurrings"
