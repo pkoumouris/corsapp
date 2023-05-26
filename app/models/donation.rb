@@ -82,6 +82,68 @@ class Donation < ApplicationRecord
     end
 
     ###################### NationBuilder #####################
+    def Donation.gnaf_to_billing_address(gnaf_id) ## Test this!
+        response = HTTParty.get("https://api.psma.com.au/v2/addresses/address/#{gnaf_id}",
+            :headers => {"Authorization"=>ENV['GNAF_API_KEY']}) #ENV['GNAF_API_KEY']
+        if response.code != 200 || response['properties'].nil?
+            return response
+        end
+        return {
+            "address1"=>[response['properties']['streetNumber1'],response['properties']['streetName'],response['properties']['streetType']].join(' '),
+            "address2"=>[response['properties']['complexUnitType'],response['properties']['complexUnitNumber']].join(' '),
+            "address3"=>"",
+            "city"=>response['properties']['localityName'],
+            "county"=>nil,
+            "state"=>response['properties']['stateTerritory'],
+            "country_code"=>"AU",
+            "zip"=>response['properties']['postcode'],
+            "lat"=>response['geometry']['coordinates'][1].to_s,
+            "lng"=>response['geometry']['coordinates'][0].to_s,
+            "fips"=>nil,
+            "street_number"=>response['properties']['streetNumber1'],
+            "street_prefix"=>nil,
+            "street_name"=>response['properties']['streetName'],
+            "street_type"=>response['properties']['streetType'],
+            "street_suffix"=>nil,
+            "unit_number"=>response['properties']['complexUnitNumber'],
+            "zip4"=>nil,
+            "zip5"=>response['properties']['postcode'],
+            "sort_sequence"=>nil,
+            "delivery_point"=>nil,
+            "lot"=>nil,
+            "carrier_route"=>nil
+        }
+    end
+
+    def create_in_nationbuilder_with_address
+        attrs = self.fill_in_tracking_code_id.nil? ? {
+            "amount_in_cents"=>self.amount_in_cents,
+            "email"=>self.email,
+            "first_name"=>self.first_name,
+            "last_name"=>self.last_name,
+            "payment_type_id"=>"2",
+            "note"=>self.order_spid
+        } : {
+            "amount_in_cents"=>self.amount_in_cents,
+            "email"=>self.email,
+            "first_name"=>self.first_name,
+            "last_name"=>self.last_name,
+            "payment_type_id"=>"2",
+            "donation_tracking_code_id"=>self.tracking_code,
+            "note"=>self.order_spid
+        }
+        nb_resp = HTTParty.post("https://acl.nationbuilder.com/api/v2/donations",:body => {
+                "data"=> {
+                    "type" => "donations",
+                    "attributes" => attrs
+                }
+            }.to_json, :headers => {
+                'Content-Type'=>'application/json',
+                'Accept'=>'application/json',
+                'Authorization'=>'Bearer '+General.access_token
+            })
+    end
+
     def create_in_nationbuilder
         attrs = self.fill_in_tracking_code_id.nil? ? {
             "amount_in_cents"=>self.amount_in_cents,

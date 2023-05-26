@@ -122,4 +122,26 @@ class General < ApplicationRecord
     def General.failure_error_code(nb, wem, cors)
         803 + (nb ? 4 : 0) + (wem ? 2 : 0) + (cors ? 1 : 0)
     end
+
+    ################# GEOSCAPE #####################
+    def General.geoscape_address_query(query)
+        response = HTTParty.get("https://api.psma.com.au/v2/addresses/geocoder?additionalProperties=localGovernmentArea,stateElectorate,commonwealthElectorate,asgsMain&address=#{query}",
+            :headers => {"Authorization"=>ENV['GNAF_API_KEY']})
+        if response.code != 200 || response['features'].length == 0
+            return nil
+        end
+        return {
+            addressId: response['features'][0]['properties']['addressId'],
+            formattedAddress: response['features'][0]['properties']['formattedAddress']
+        }
+    end
+
+    def General.geoscape_address_from_gnaf_id(gnaf_id)
+        response = HTTParty.get("https://api.psma.com.au/v2/addresses/address/#{gnaf_id}",
+            :headers => {"Authorization"=>ENV['GNAF_API_KEY']})
+        if response.code != 200 || response['properties'].nil?
+            return nil
+        end
+        return response['properties']['formattedAddress']
+    end
 end
