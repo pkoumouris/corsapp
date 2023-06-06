@@ -1,5 +1,18 @@
-ID: <%= current_user.id %> - <%= logged_in? %>
+<h2>
+    Welcome, <%= current_user.name %>
+</h2>
 
+<h3>
+    Search donation by SecurePay Order ID
+</h3>
+<input type="text" class="txt-input" id="order-id-tgt" />
+<button onclick="go_to_donation()">
+    Go
+</button>
+
+<h3>
+    Recent donations
+</h3>
 <% @donations.each do |donation| %>
     <div class="index-donation-container">
         <h3>
@@ -57,3 +70,19 @@ ID: <%= current_user.id %> - <%= logged_in? %>
         </table>
     </div>
 <% end %>
+<div class="index-donation-container" id="load-more" style="cursor:pointer;text-align:center;" onclick="load_more()">
+    Load more
+</div>
+
+<script>
+function go_to_donation(){
+    const id = document.getElementById('order-id-tgt').value;
+    window.location = "/donation/"+id;
+}
+
+function load_more(){
+    document.getElementById('load-more').innerHTML = "Loading...";
+    const n = <%= @donations.count %>;
+    window.location = "/index?n="+String(n+5);
+}
+</script>

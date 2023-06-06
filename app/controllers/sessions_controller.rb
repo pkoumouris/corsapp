@@ -35,6 +35,10 @@ class SessionsController < ApplicationController
 
     def show_donation
         @donation = Donation.find_by(order_spid: params[:order_spid])
+        if @donation.nil?
+            flash[:danger] = "Donation not found."
+            redirect_to '/index'
+        end
         @test_token = General.test_token
     end
 end

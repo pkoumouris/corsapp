@@ -62,3 +62,43 @@ body {
 .index-donation-container table tr td {
     width: 220px;
 }
+
+#flash-success {
+    padding: 20px;
+    font-size: 16px;
+    background-color: lightgreen;
+    margin-top: 20px;
+ }
+
+ #flash-info {
+   padding: 20px;
+   font-size: 16px;
+   background-color: lightblue;
+   margin-top: 20px;
+ }
+
+ #flash-warning {
+   padding: 20px;
+   font-size: 16px;
+   background-color: orange;
+   margin-top: 20px;
+ }
+
+ #flash-danger {
+   padding: 20px;
+   font-size: 16px;
+   background-color: lightcoral;
+   margin-top: 20px;
+ }
+
+ .txt-input {
+    border: solid;
+    border-width: 1px;
+    border-color: grey;
+    border-radius: 5px;
+    width: 440px;
+    padding: 10px;
+    font-size: 18px;
+    font-family: Courier;
+    font-weight: bold;
+ }
