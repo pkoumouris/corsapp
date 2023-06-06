@@ -5,6 +5,7 @@ class Donation < ApplicationRecord
     xcrypt = ActiveSupport::MessageEncryptor.new(Rails.application.secrets.secret_key_base[0..31])
     CLIENT_ID = Rails.env.production? ? ENV['NB_CLIENT_ID'] : xcrypt.decrypt_and_verify('SXN8u9vl0davLbNR4axO6/9BI+zvakizdFm7Ori3vT9ppGLKBTZbemrjGrGarvXSObKyxrs=--cgiPU7DgeAO+hztT--MKD/LgFOrtNdZsY1rPngpQ==')
     CLIENT_SECRET = Rails.env.production? ? ENV['NB_CLIENT_SECRET'] : xcrypt.decrypt_and_verify('tYpic0T4w9Wv/fP9Dvubjzj0qKCFPJ7nVRER0eEmGmQ8ki+sg1zECV+mc3e19LTUwSe/yxk=--5zbRz+cHjO1XLQtS--cLeCgMYQHjK38V7cLpyxlA==')
+    GNAF_API_KEY = Rails.env.production? ? ENV['GNAF_API_KEY'] : xcrypt.decrypt_and_verify('DzPxfwqMGdAJBZf/giRZ4T1Mh/+/+dMoZtwzghLnACHDsUXWwomtWpj2--xz/qcV5RyUAp65aO--/n5DGBlEJPp5P1MaBRjSoA==')
     REDIRECT_URI = Rails.env.production? ? "https://cors.acl.org.au/nb_oauth_callback/" : "http://localhost:3000/nb_oauth_callback/"
     SITE_PATH = 'https://acl.nationbuilder.com'
     RECURRING_SLUG = "ov_w_monthly_sp"
@@ -84,38 +85,28 @@ class Donation < ApplicationRecord
     ###################### NationBuilder #####################
     def Donation.gnaf_to_billing_address(gnaf_id) ## Test this!
         response = HTTParty.get("https://api.psma.com.au/v2/addresses/address/#{gnaf_id}",
-            :headers => {"Authorization"=>ENV['GNAF_API_KEY']}) #ENV['GNAF_API_KEY']
+            :headers => {"Authorization"=>GNAF_API_KEY}) #ENV['GNAF_API_KEY']
         if response.code != 200 || response['properties'].nil?
             return response
         end
         return {
-            "address1"=>[response['properties']['streetNumber1'],response['properties']['streetName'],response['properties']['streetType']].join(' '),
-            "address2"=>[response['properties']['complexUnitType'],response['properties']['complexUnitNumber']].join(' '),
-            "address3"=>"",
             "city"=>response['properties']['localityName'],
-            "county"=>nil,
+            "zip"=>response['properties']['postcode'],
             "state"=>response['properties']['stateTerritory'],
             "country_code"=>"AU",
-            "zip"=>response['properties']['postcode'],
             "lat"=>response['geometry']['coordinates'][1].to_s,
             "lng"=>response['geometry']['coordinates'][0].to_s,
-            "fips"=>nil,
             "street_number"=>response['properties']['streetNumber1'],
-            "street_prefix"=>nil,
-            "street_name"=>response['properties']['streetName'],
             "street_type"=>response['properties']['streetType'],
-            "street_suffix"=>nil,
-            "unit_number"=>response['properties']['complexUnitNumber'],
-            "zip4"=>nil,
-            "zip5"=>response['properties']['postcode'],
-            "sort_sequence"=>nil,
-            "delivery_point"=>nil,
-            "lot"=>nil,
-            "carrier_route"=>nil
+            "street_name"=>response['properties']['streetName'],
+            "unit_number"=>response['properties']['complexUnitNumber']
         }
     end
 
     def create_in_nationbuilder_with_address
+        addr_attrs = Donation.gnaf_to_billing_address(self.gnaf_address_identifier)
+        puts addr_attrs
+        puts addr_attrs
         attrs = self.fill_in_tracking_code_id.nil? ? {
             "amount_in_cents"=>self.amount_in_cents,
             "email"=>self.email,
@@ -135,13 +126,30 @@ class Donation < ApplicationRecord
         nb_resp = HTTParty.post("https://acl.nationbuilder.com/api/v2/donations",:body => {
                 "data"=> {
                     "type" => "donations",
-                    "attributes" => attrs
-                }
+                    "attributes" => attrs,
+                    "relationships"=>{
+                        "billing_address"=>{
+                            "data"=>{
+                                "type"=>"billing_address",
+                                "temp-id"=>"tempid-1234",
+                                "method"=>"create"
+                            }
+                        }
+                    }
+                },
+                "included"=>[
+                    {
+                        "type"=>"billing_address",
+                        "temp-id"=>"tempid-1234",
+                        "attributes"=>addr_attrs
+                    }
+                ]
             }.to_json, :headers => {
                 'Content-Type'=>'application/json',
                 'Accept'=>'application/json',
                 'Authorization'=>'Bearer '+General.access_token
             })
+        return nb_resp
     end
 
     def create_in_nationbuilder
@@ -297,6 +305,39 @@ class Donation < ApplicationRecord
 
     def Donation.recurring_slug
         RECURRING_SLUG
+    end
+
+    def refund_payment(sp_env)
+        sp_resp = HTTParty.post(SP_LIVE && sp_env == "LIVE" ? "https://payments.auspost.net.au/v2/orders/#{self.order_spid}/refunds" : "https://payments-stest.npe.auspost.zone/v2/orders/#{self.order_spid}/refunds",
+            :body => {
+                'amount'=>self.amount_in_cents,
+                'merchantCode'=>SP_LIVE && sp_env == "LIVE" ? SP_MERCHANT_CODE : "5AR0055",
+                'ip'=>self.origin_ip.nil? ? "127.0.0.1" : self.origin_ip
+            }.to_json,
+            :headers => {
+                'Content-Type'=>'application/json',
+                'Authorization'=>'Bearer '+General.sp_access_token(sp_env)
+            })
+        return sp_resp
+    end
+
+    def set_nb_donation_as_refunded
+        attrs = {
+            "canceled_at" => Time.now.in_time_zone("GMT").rfc3339
+            #"first_name" => "Yetanother"
+        }
+        nb_resp = HTTParty.patch("https://acl.nationbuilder.com/api/v2/donations/#{self.nbid.to_s}",:body => {
+            "data"=> {
+                "id" => self.nbid.to_s,
+                "type" => "donations",
+                "attributes" => attrs
+            }
+        }.to_json, :headers => {
+            'Content-Type'=>'application/json',
+            'Accept'=>'application/json',
+            'Authorization'=>'Bearer '+General.access_token
+        })
+        return nb_resp
     end
 
     #def update_nb_user_address

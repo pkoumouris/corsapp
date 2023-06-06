@@ -1,0 +1,171 @@
+<h2>
+    Donation <%= @donation.order_spid %>
+</h2>
+
+<table id="donation-table">
+    <tr>
+        <td>
+            Amount
+        </td>
+        <td>
+            A$<%= (@donation.amount_in_cents / 100.0).to_i %>
+        </td>
+    <tr>
+    <tr>
+        <td>
+            Date and time
+        </td>
+        <td>
+            <%= @donation.created_at.in_time_zone('Australia/Melbourne').rfc2822 %>
+        </td>
+    <tr>
+    <tr>
+        <td>
+            Email
+        </td>
+        <td>
+            <%= @donation.email %>
+        </td>
+    <tr>
+    <tr>
+        <td>
+            Bank transaction ID
+        </td>
+        <td>
+            <%= @donation.bank_transaction_spid %>
+        </td>
+    <tr>
+    <tr>
+        <td>
+            First name
+        </td>
+        <td>
+            <%= @donation.first_name %>
+        </td>
+    <tr>
+    <tr>
+        <td>
+            Last name
+        </td>
+        <td>
+            <%= @donation.last_name %>
+        </td>
+    <tr>
+    <tr>
+        <td>
+            Origin IP
+        </td>
+        <td>
+            <%= @donation.origin_ip %>
+        </td>
+    <tr>
+    <tr>
+        <td>
+            Type
+        </td>
+        <td>
+            <%= @donation.recurring_id.nil? ? "Once off" : "Recurring" %>
+        </td>
+    <tr>
+    <tr>
+        <td>
+            NationBuilder ID
+        </td>
+        <td>
+            <%= @donation.nbid %>
+        </td>
+    <tr>
+</table>
+
+<div id="refund-result" style="visibility:hidden;">
+    <table>
+        <tr>
+            <td>
+                SecurePay refund status:
+            </td>
+            <td id="sp-refund-tgt">
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+                NationBuilder refund status:
+            </td>
+            <td id="nb-refund-tgt">
+
+            </td>
+        </tr>
+    </table>
+</div>
+<div id="refund-primary">
+    <% if !@donation.refunded %>
+    <button class="btn" onclick="click_refund()">
+        Refund
+    </button>
+    <% else %>
+    Refunded at <%= @donation.refunded_at.nil? ? "Unknown" : @donation.refunded_at.in_time_zone('Australia/Melbourne').rfc2822 %>
+    <% end %>
+</div>
+<div id="refund-secondary" style="visibility:hidden;">
+    <div id="refund-secondary-message">
+        Are you sure you want to refund this donation?
+    </div>
+    <table>
+        <tr>
+            <td>
+                <button class="btn" onclick="refund()">
+                    Yes
+                </button>
+            </td>
+            <td>
+                <button class="btn" onclick="cancel_refund()">
+                    No
+                </button>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<script>
+function click_refund(){
+    document.getElementById('refund-secondary').style.visibility = 'visible';
+    document.getElementById('refund-primary').style.visibility = 'hidden';
+}
+
+function cancel_refund(){
+    document.getElementById('refund-secondary').style.visibility = 'hidden';
+    document.getElementById('refund-primary').style.visibility = 'visible';
+}
+
+const live = <%= Rails.env.production? ? "true" : "false" %>;
+const test_token = "<%= Rails.env.production? ? "" : @test_token %>";
+
+function refund(){
+    document.getElementById('refund-secondary-message').innerHTML = "Please wait...";
+    fetch(live ? "/api/refund" : "/api/sandbox/refund",{
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'x-csrf-token': '<%= form_authenticity_token %>'
+        },
+        body: JSON.stringify({
+            env_token: test_token,
+            id: <%= @donation.id %>
+        })
+    }).then( (response) => {
+        if (response.ok){
+            return response.json();
+        }
+        document.getElementById('refund-secondary-message').innerHTML = "Error encountered. Please keep this page and speak to your system administrator.";
+        throw new Error('Request fail');
+    }).then(json => {
+        console.log(json);
+        document.getElementById('sp-refund-tgt').innerHTML = json.sp_success ? "SUCCESS" : "FAILURE";
+        document.getElementById('nb-refund-tgt').innerHTML = json.nb_success ? "SUCCESS" : "FAILURE";
+        document.getElementById('refund-result').style.visibility = "visible";
+        document.getElementById('refund-secondary').style.visibility = "hidden";
+    });
+}
+</script>

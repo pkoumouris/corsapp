@@ -12,7 +12,19 @@ Rails.application.routes.draw do
   get '/nb_oauth_callback', to: 'nboauths#redirect_code'
   get '/varstubs', to: 'general#see_env_var_stubs'
 
+  # api
+  post '/api/sandbox/refund', to: 'general#sandbox_refund'
+  post '/api/refund', to: 'general#refund'
+
+  # general pages
+  get '/index', to: 'sessions#index'
+  get '/donation/:order_spid', to: 'sessions#show_donation'
+
   # A message for the hackers
   get '/boaform/admin/formLogin', to: 'general#nice_try'
   get '/.env', to: 'general#nice_try'
+
+  # Log in
+  get '/login', to: 'sessions#new'
+  post '/login', to: 'sessions#create'
 end

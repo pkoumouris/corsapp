@@ -1,0 +1,13 @@
+<h2>
+    Log in here
+</h2>
+
+<div id="login-wrapper">
+    <form action="/login" accept-charset="UTF-8" method="post">
+        <input name="utf8" type="hidden" value="&#x2713" />
+        <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>" />
+        <input class="login-field" name="session[email]" placeholder="Email" /><br />
+        <input class="login-field" name="session[password]" placeholder="Password" type="password" /><br />
+        <input type="submit" value="Submit" class="general-button" />
+    </form>
+</div>

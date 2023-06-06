@@ -93,7 +93,8 @@ class GeneralController < ApplicationController
         wem_failure = false # will change as time goes on
         nb_failure = false # will change as time goes on
         # 3a. Make the calls to NB
-        nb_resp = donation.create_in_nationbuilder
+        nb_resp = donation.create_in_nationbuilder_with_address
+        puts nb_resp
         nb_failure = (nb_resp.code != 201)
         if !nb_failure
             donation.update_attribute(:nbid, nb_resp['data']['id'])
@@ -183,7 +184,8 @@ class GeneralController < ApplicationController
         wem_failure = false # will change as time goes on
         nb_failure = false # will change as time goes on
         # 3a. Make the calls to NB
-        nb_resp = donation.create_in_nationbuilder
+        nb_resp = donation.create_in_nationbuilder_with_address
+        puts nb_resp
         nb_failure = (nb_resp.code != 201)
         if !nb_failure
             donation.update_attribute(:nbid, nb_resp['data']['id'])
@@ -218,6 +220,8 @@ class GeneralController < ApplicationController
     end
 
     def wem_payment
+        render plain: {error: "Not allowed."}.to_json, status: 400
+        return nil
         response = HTTParty.post(params[:tgt_url],
             :body => params[:tgt_body].to_json,
             :headers => {
@@ -257,6 +261,77 @@ class GeneralController < ApplicationController
         #nb_resp = JSON.parse(response["NB Donation Response"])
         #puts nb_resp
         #render json: response.to_json
+    end
+
+    def refund
+        #### START UNIQUE LOGIC
+        sp_env = "LIVE"
+        #### END UNIQUE LOGIC
+        if !logged_in?
+            render plain: {error: "Forbidden."}.to_json, status: 400
+            return nil
+        end
+        donation = Donation.find_by(id: params[:id].to_i)
+        sp_resp = donation.refund_payment(sp_env)
+        if sp_resp.code != 201
+            render json: {
+                sp_success: false,
+                nb_success: false
+            }.to_json
+            return nil
+        end
+        donation.update_attribute(:refunded, true)
+        donation.update_attribute(:refunded_at, Time.now)
+        nb_resp = donation.set_nb_donation_as_refunded
+        if sp_resp.code == 201 || nb_resp.code == 200
+            render json: {
+                sp_success: true,
+                nb_success: true
+            }.to_json
+        else
+            render json: {
+                sp_success: true,
+                nb_success: false
+            }.to_json
+        end
+    end
+
+    def sandbox_refund
+        #### START UNIQUE LOGIC
+        if Digest::SHA256.base64digest(params[:env_token]) != "vg1aJVAe9FZfITG9YptD9LIh4VUa7YQcCocxlL9NUyY="
+            puts "Wrong token"
+            render plain: {error:"WRONG TOKEN"}.to_json, status: 400
+            return nil
+        end
+        sp_env = "SANDBOX"
+        #### END UNIQUE LOGIC
+        if !logged_in?
+            render plain: {error: "Forbidden."}.to_json, status: 400
+            return nil
+        end
+        donation = Donation.find_by(id: params[:id].to_i)
+        sp_resp = donation.refund_payment(sp_env)
+        if sp_resp.code != 201
+            render json: {
+                sp_success: false,
+                nb_success: false
+            }.to_json
+            return nil
+        end
+        donation.update_attribute(:refunded, true)
+        donation.update_attribute(:refunded_at, Time.now)
+        nb_resp = donation.set_nb_donation_as_refunded
+        if sp_resp.code == 201 || nb_resp.code == 200
+            render json: {
+                sp_success: true,
+                nb_success: true
+            }.to_json
+        else
+            render json: {
+                sp_success: true,
+                nb_success: false
+            }.to_json
+        end
     end
 
     def get_campaigns

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_22_042124) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_06_003554) do
   create_table "donations", force: :cascade do |t|
     t.integer "amount_in_cents"
     t.string "gateway_response_code"
@@ -41,6 +41,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_22_042124) do
     t.boolean "is_recurring"
     t.boolean "test"
     t.string "signup_nbid"
+    t.boolean "refunded"
+    t.datetime "refunded_at"
     t.index ["bank_transaction_spid"], name: "index_donations_on_bank_transaction_spid"
     t.index ["email"], name: "index_donations_on_email"
     t.index ["exported"], name: "index_donations_on_exported"
@@ -75,6 +77,16 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_22_042124) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "test"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.string "name"
+    t.string "email"
+    t.string "role"
+    t.integer "status"
+    t.string "password_digest"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   add_foreign_key "donations", "recurrings"

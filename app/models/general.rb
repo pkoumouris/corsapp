@@ -2,6 +2,7 @@ class General < ApplicationRecord
     xcrypt = ActiveSupport::MessageEncryptor.new(Rails.application.secrets.secret_key_base[0..31])
     CLIENT_ID = Rails.env.production? ? ENV['NB_CLIENT_ID'] : xcrypt.decrypt_and_verify('SXN8u9vl0davLbNR4axO6/9BI+zvakizdFm7Ori3vT9ppGLKBTZbemrjGrGarvXSObKyxrs=--cgiPU7DgeAO+hztT--MKD/LgFOrtNdZsY1rPngpQ==')
     CLIENT_SECRET = Rails.env.production? ? ENV['NB_CLIENT_SECRET'] : xcrypt.decrypt_and_verify('tYpic0T4w9Wv/fP9Dvubjzj0qKCFPJ7nVRER0eEmGmQ8ki+sg1zECV+mc3e19LTUwSe/yxk=--5zbRz+cHjO1XLQtS--cLeCgMYQHjK38V7cLpyxlA==')
+    TEST_TOKEN = Rails.env.production? ? "" : xcrypt.decrypt_and_verify('Q56f7Pn7gHvpGWSaKoTHnXtQVW2dZNHR8cQ=--3A46FpVdAg1tMMPd--T5ow8BuoeF6Tjpdln5sohA==')
 
     def General.save_access_token(access_token, expires_in, refresh_token)
         if General.find_by(name: "NB_ACCESS_TOKEN").nil?
@@ -59,6 +60,10 @@ class General < ApplicationRecord
         else
             raise "Could not refresh token"
         end
+    end
+
+    def General.test_token
+        TEST_TOKEN
     end
 
     ######## NB PEOPLE

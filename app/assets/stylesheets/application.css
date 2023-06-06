@@ -13,3 +13,52 @@
  *= require_tree .
  *= require_self
  */
+
+body {
+    font-family: Arial;
+}
+
+ #login-wrapper {
+    margin: auto;
+}
+
+.login-field {
+    font-size: 16px;
+    padding: 10px;
+    border: solid;
+    border-width: 1px;
+    border-color: #c9c9c9;
+    margin: 10px;
+    border-radius: 5px;
+}
+
+#donation-table tr td {
+    width: 300px;
+    padding: 10px;
+    border-bottom: solid;
+    border-bottom-width: 1px;
+    border-bottom-color: black;
+}
+
+.btn {
+    width: 120px;
+    background-color: #efefef;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 5px;
+    border-radius: 0px;
+    cursor: pointer;
+}
+
+.index-donation-container {
+    background-color: #efefef;
+    margin: 5px;
+    padding: 10px;
+    font-size: 14px;
+}
+
+.index-donation-container table tr td {
+    width: 220px;
+}

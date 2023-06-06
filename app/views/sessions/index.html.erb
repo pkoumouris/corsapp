@@ -1,0 +1,59 @@
+ID: <%= current_user.id %> - <%= logged_in? %>
+
+<% @donations.each do |donation| %>
+    <div class="index-donation-container">
+        <h3>
+            <a href="/donation/<%= donation.order_spid %>"><%= donation.order_spid %></a>
+        </h3>
+        <table>
+            <tr>
+                <td>
+                    Amount
+                </td>
+                <td>
+                    A$<%= (donation.amount_in_cents / 100).to_i %>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Name
+                </td>
+                <td>
+                    <%= donation.first_name %> <%= donation.last_name %>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Email
+                </td>
+                <td>
+                    <%= donation.email %>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Status
+                </td>
+                <td>
+                    <%= donation.refunded ? "Refunded" : (donation.success ? "Successful" : "Unsuccessful") %>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    NationBuilder ID
+                </td>
+                <td>
+                    <%= donation.nbid %>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Created At
+                </td>
+                <td>
+                    <%= donation.created_at.rfc2822.in_time_zone('Australia/Melbourne').rfc2822 %>
+                </td>
+            </tr>
+        </table>
+    </div>
+<% end %>
