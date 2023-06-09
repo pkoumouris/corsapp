@@ -16,6 +16,8 @@ Rails.application.routes.draw do
   post '/api/sandbox/refund', to: 'general#sandbox_refund'
   post '/api/refund', to: 'general#refund'
 
+  post '/api/refresh_access_token', to: 'sessions#refresh_access_token'
+
   # general pages
   get '/index', to: 'sessions#index'
   get '/donation/:order_spid', to: 'sessions#show_donation'

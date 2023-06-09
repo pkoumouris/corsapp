@@ -104,8 +104,11 @@ class Donation < ApplicationRecord
     end
 
     def create_in_nationbuilder_with_address
-        addr_attrs = Donation.gnaf_to_billing_address(self.gnaf_address_identifier)
-        puts addr_attrs
+        if self.gnaf_address_identifier.nil? || self.gnaf_address_identifier.length < 2
+            add_attrs = {"street_name" => self.address}
+        else
+            addr_attrs = Donation.gnaf_to_billing_address(self.gnaf_address_identifier)
+        end
         puts addr_attrs
         attrs = self.fill_in_tracking_code_id.nil? ? {
             "amount_in_cents"=>self.amount_in_cents,

@@ -41,4 +41,15 @@ class SessionsController < ApplicationController
         end
         @test_token = General.test_token
     end
+
+    def refresh_access_token
+        if Digest::SHA256.base64digest(params[:token]) != "vg1aJVAe9FZfITG9YptD9LIh4VUa7YQcCocxlL9NUyY="
+            render plain: {error: "Forbidden"}.to_json, status: 400
+            return nil
+        end
+        General.refresh_access_token
+        render json: {
+            expires_at: General.find_by(name: "NB_EXPIRES_AT").value
+        }.to_json
+    end
 end
