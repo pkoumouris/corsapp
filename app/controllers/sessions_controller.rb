@@ -1,4 +1,6 @@
 class SessionsController < ApplicationController
+    skip_before_action :verify_authenticity_token, only: [:refresh_access_token]
+
     def new
         if logged_in?
             redirect_to root_url
