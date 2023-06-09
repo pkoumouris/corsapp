@@ -105,7 +105,7 @@ class Donation < ApplicationRecord
 
     def create_in_nationbuilder_with_address
         if self.gnaf_address_identifier.nil? || self.gnaf_address_identifier.length < 2
-            add_attrs = {"street_name" => self.address}
+            add_attrs = {"city"=>"","zip"=>"","state"=>"","country_code"=>"AU","lat"=>"","lng"=>"","street_number"=>"","street_type"=>"","street_name"=>"","unit_number"=>""}
         else
             addr_attrs = Donation.gnaf_to_billing_address(self.gnaf_address_identifier)
         end
