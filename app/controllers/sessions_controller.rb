@@ -31,8 +31,18 @@ class SessionsController < ApplicationController
     end
 
     def index
-        n = params[:n].nil? ? 10 : params[:n]
-        @donations = Donation.last(n).reverse
+        @start = nil
+        @finish = nil
+        if !params[:start].nil? && !params[:finish].nil?
+            @start = Time.new(params[:start][0..3].to_i,params[:start][4..5].to_i,params[:start][6..7].to_i)
+            @finish = Time.new(params[:finish][0..3].to_i,params[:finish][4..5].to_i,params[:finish][6..7].to_i)
+            @donations = Donation.where(created_at: @start..(@finish+1.day))
+            @load_more = false
+        else
+            n = params[:n].nil? ? 10 : params[:n]
+            @donations = Donation.last(n).reverse
+            @load_more = true
+        end
     end
 
     def show_donation

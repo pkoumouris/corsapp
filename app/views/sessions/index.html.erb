@@ -10,8 +10,36 @@
     Go
 </button>
 
+<div>
+<% if !@start.nil? %>
+<div>
+    <p>
+        Searching between <%= @start.rfc2822.in_time_zone("Australia/Melbourne") %> and <%= (@finish+1.day - 10.seconds).rfc2822.in_time_zone("Australia/Melbourne") %>
+    </p>
+</div>
+<% end %>
+
 <h3>
-    Recent donations
+    Search donation by date (inclusive)
+</h3>
+<table>
+    <tr>
+        <td>
+            <input type="date" id="start" />
+        </td>
+        <td>
+            <input type="date" id="finish" />
+        </td>
+    </tr>
+</table>
+<button onclick="search_donations_by_date()">
+    Go
+</button>
+
+</div>
+
+<h3>
+    <%= @start.nil? ? "Recent donations" : "Results (#{@donations.count})" %>
 </h3>
 <% @donations.each do |donation| %>
     <div class="index-donation-container">
@@ -70,9 +98,11 @@
         </table>
     </div>
 <% end %>
+<% if @load_more %>
 <div class="index-donation-container" id="load-more" style="cursor:pointer;text-align:center;" onclick="load_more()">
     Load more
 </div>
+<% end %>
 
 <script>
 function go_to_donation(){
@@ -84,5 +114,14 @@ function load_more(){
     document.getElementById('load-more').innerHTML = "Loading...";
     const n = <%= @donations.count %>;
     window.location = "/index?n="+String(n+5);
+}
+
+function search_donations_by_date(){
+    let start = document.getElementById('start').value;
+    console.log(start);
+    let finish = document.getElementById('finish').value;
+    if (start.length === 10 && finish.length === 10){
+        window.location = "/index?start="+start.split('-').join('')+"&finish="+finish.split('-').join('');
+    }
 }
 </script>

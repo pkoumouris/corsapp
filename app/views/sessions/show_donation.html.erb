@@ -21,6 +21,14 @@
     <tr>
     <tr>
         <td>
+            Status
+        </td>
+        <td>
+            <%= @donation.success ? "Successful" : "Unsuccessful" %>
+        </td>
+    </tr>
+    <tr>
+        <td>
             Email
         </td>
         <td>
@@ -75,6 +83,62 @@
             <%= @donation.nbid %>
         </td>
     <tr>
+    <tr>
+        <td>
+            Signup NationBuilder ID
+        </td>
+        <td>
+            <%= @donation.signup_nbid %>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Is a test?
+        </td>
+        <td>
+            <%= @donation.test ? "Yes" : "No" %>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Address
+        </td>
+        <td>
+            <%= @donation.address %>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Geoscape ID
+        </td>
+        <td>
+            <%= @donation.gnaf_address_identifier %>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Phone Number
+        </td>
+        <td>
+            <%= @donation.phone_number %>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Tracking code ID
+        </td>
+        <td>
+            <%= @donation.tracking_code %>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Tracking code slug
+        </td>
+        <td>
+            <%= @donation.tracking_code_slug %>
+        </td>
+    </tr>
 </table>
 
 <div id="refund-result" style="visibility:hidden;">

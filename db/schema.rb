@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_06_003554) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_23_055656) do
   create_table "donations", force: :cascade do |t|
     t.integer "amount_in_cents"
     t.string "gateway_response_code"
@@ -43,7 +43,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_06_003554) do
     t.string "signup_nbid"
     t.boolean "refunded"
     t.datetime "refunded_at"
+    t.string "page_slug"
     t.index ["bank_transaction_spid"], name: "index_donations_on_bank_transaction_spid"
+    t.index ["created_at"], name: "index_donations_on_created_at"
     t.index ["email"], name: "index_donations_on_email"
     t.index ["exported"], name: "index_donations_on_exported"
     t.index ["gateway_response_code"], name: "index_donations_on_gateway_response_code"
