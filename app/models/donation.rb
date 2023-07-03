@@ -103,9 +103,28 @@ class Donation < ApplicationRecord
         }
     end
 
+    def update_nb_with_tracking_code
+        if self.tracking_code.nil?
+            return nil
+        end
+        nb_resp = HTTParty.put("https://acl.nationbuilder.com/api/v2/donations/#{self.nbid}",:body => {
+            "data"=>{
+                "type"=>"donations",
+                "id"=>self.nbid,
+                "attributes"=>{
+                    "donation_tracking_code_id"=>self.tracking_code
+                }
+            }
+        }.to_json,:headers => {
+            'Content-Type'=>'application/json',
+            'Accept'=>'application/json',
+            'Authorization'=>'Bearer '+General.access_token
+        })
+    end
+
     def create_in_nationbuilder_with_address
-        if self.gnaf_address_identifier.nil? || self.gnaf_address_identifier.length < 2
-            add_attrs = {"city"=>"","zip"=>"","state"=>"","country_code"=>"AU","lat"=>"","lng"=>"","street_number"=>"","street_type"=>"","street_name"=>"","unit_number"=>""}
+        if self.gnaf_address_identifier.nil? || self.gnaf_address_identifier.length < 2 || self.gnaf_address_identifier[0..1] == "MA"
+            addr_attrs = {"city"=>"","zip"=>"","state"=>"","country_code"=>"AU","lat"=>"","lng"=>"","street_number"=>"","street_type"=>"","street_name"=>"","unit_number"=>""}
         else
             addr_attrs = Donation.gnaf_to_billing_address(self.gnaf_address_identifier)
         end

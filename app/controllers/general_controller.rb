@@ -93,7 +93,7 @@ class GeneralController < ApplicationController
         wem_failure = false # will change as time goes on
         nb_failure = false # will change as time goes on
         # 3a. Make the calls to NB
-        if donation.gnaf_address_identifier.nil? || donation.gnaf_address_identifier.length < 3 || donation.gnaf_address_identifier[0..1] == "MA"
+        if false && (donation.gnaf_address_identifier.nil? || donation.gnaf_address_identifier.length < 3 || donation.gnaf_address_identifier[0..1] == "MA")
             nb_resp = donation.create_in_nationbuilder
         else
             nb_resp = donation.create_in_nationbuilder_with_address
