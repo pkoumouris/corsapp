@@ -124,7 +124,8 @@ class Donation < ApplicationRecord
 
     def create_in_nationbuilder_with_address
         if self.gnaf_address_identifier.nil? || self.gnaf_address_identifier.length < 2 || self.gnaf_address_identifier[0..1] == "MA"
-            addr_attrs = {"city"=>"","zip"=>"","state"=>"","country_code"=>"AU","lat"=>"","lng"=>"","street_number"=>"","street_type"=>"","street_name"=>"","unit_number"=>""}
+            #addr_attrs = {"city"=>"","zip"=>"","state"=>"","country_code"=>"AU","lat"=>"","lng"=>"","street_number"=>"","street_type"=>"","street_name"=>"","unit_number"=>""}
+            return self.create_in_nationbuilder
         else
             addr_attrs = Donation.gnaf_to_billing_address(self.gnaf_address_identifier)
         end
@@ -135,6 +136,7 @@ class Donation < ApplicationRecord
             "first_name"=>self.first_name,
             "last_name"=>self.last_name,
             "payment_type_id"=>"2",
+            "donation_tracking_code_id"=>self.tracking_code.nil? ? "3493" : self.tracking_code,
             "note"=>self.order_spid
         } : {
             "amount_in_cents"=>self.amount_in_cents,
@@ -181,6 +183,7 @@ class Donation < ApplicationRecord
             "first_name"=>self.first_name,
             "last_name"=>self.last_name,
             "payment_type_id"=>"2",
+            "donation_tracking_code_id"=>self.tracking_code.nil? ? "3493" : self.tracking_code,
             "note"=>self.order_spid
         } : {
             "amount_in_cents"=>self.amount_in_cents,
