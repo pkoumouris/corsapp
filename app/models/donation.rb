@@ -173,6 +173,9 @@ class Donation < ApplicationRecord
                 'Accept'=>'application/json',
                 'Authorization'=>'Bearer '+General.access_token
             })
+        if nb_resp.code == 201 && !nb_resp['data'].nil?
+            self.update_attribute(:nbid,nb_resp['data']['id'])
+        end
         return nb_resp
     end
 
@@ -215,6 +218,9 @@ class Donation < ApplicationRecord
             rescue
                 puts "Aw schucks, couldn't add the tag"
             end
+        end
+        if nb_resp.code == 201 && !nb_resp['data'].nil?
+            self.update_attribute(:nbid,nb_resp['data']['id'])
         end
         return nb_resp
     end
