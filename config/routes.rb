@@ -29,4 +29,7 @@ Rails.application.routes.draw do
   # Log in
   get '/login', to: 'sessions#new'
   post '/login', to: 'sessions#create'
+
+  # Geoscape
+  get '/geoscape', to: 'general#geoscape'
 end

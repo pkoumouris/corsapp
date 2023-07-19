@@ -359,6 +359,19 @@ class GeneralController < ApplicationController
         render json: response.to_json
     end
 
+    ### GEOSCAPE tmp
+    def geoscape
+        if params[:q].length < 500
+            render json: {
+                results: General.geoscape_query(params[:q])
+            }.to_json
+        else
+            render json: {
+                success: false
+            }.to_json, status: 401
+        end
+    end
+
     def nice_try
         render json: {
             message: "I know you're trying to hack this, I can see you. You need to find the Lord Jesus Christ."

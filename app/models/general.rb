@@ -149,4 +149,20 @@ class General < ApplicationRecord
         end
         return response['properties']['formattedAddress']
     end
+
+    ####### GNAF
+    def General.geoscape_query(q)
+        response = HTTParty.get("https://api.psma.com.au/v2/addresses/geocoder?additionalProperties=localGovernmentArea,stateElectorate,commonwealthElectorate,asgsMain&address=#{q}",
+            :headers => {
+                'Authorization' => ENV['GEOSCAPE_API_KEY']
+            })
+        if response.code == 200# && !response['features'].nil? && response['features'].length > 0 && !response['features'][0]['properties'].nil? && !response['features'][0]['properties']['commonwealthElectorate'].nil?
+            return response['features'].map { |r| {
+                'formattedAddress': r['properties']['formattedAddress'],
+                'commonwealthElectorate': r['properties']['commonwealthElectorate']['commElectoralName']
+            } }
+        else
+            return nil
+        end
+    end
 end
