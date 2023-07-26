@@ -328,6 +328,8 @@ class Donation < ApplicationRecord
             self.send_email_updates = params[:send_email_updates]
             self.is_recurring = params[:recurring]
             self.tracking_code_slug = self.is_recurring ? RECURRING_SLUG : params[:tracking_code]
+            self.is_subsequent_recurring = false
+            self.executed_at = Time.now
             self.save
         rescue
             return nil

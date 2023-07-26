@@ -359,6 +359,44 @@ class GeneralController < ApplicationController
         render json: response.to_json
     end
 
+    def reconcile_recurring
+        if Digest::SHA256.base64digest(params[:token]) != 'BFv0+H1LOCKZgzFXBCkbtVBEs2QId8jqPMW/NhU2jIo='
+            render plain: {error:"WRONG TOKEN"}.to_json, status: 400
+            return nil
+        end
+        fail_list = []
+        params[:transactions].each do |t|
+            recurring = Recurring.find_by(schedule_spid:t[:client_id])
+            if recurring.nil?
+                fail_list.push({:transaction => t, :message => "A recurring object could not be found for that transaction."})
+            else
+                original = recurring.donations.first
+                others = Donation.where(order_spid: t[:transaction_reference], success: true, executed_at: Time.new(1999,12,30)..Time.now)
+                if others.map { |o| ((o.executed_at - Time.parse(t[:executed_at]))/1.day).abs }.min < 2
+                    fail_list.push({:transaction => t, :message => "A successful donation already exists with that order (transaction) ID."})
+                elsif recurring.nil?
+                    fail_list.push({:transaction => t, :message => "Could not find a recurring object to link the transaction to."})
+                elsif original.nil? || original.email.nil?
+                    fail_list.push({:transaction => t, :message => "Could not find an original transaction that had a valid email."})
+                else
+                    donation = Donation.new(amount_in_cents: t[:amount].to_i*100, gateway_response_code:'00',bank_transaction_spid:t[:bank_transaction_id],tracking_code_slug:'ov_w_monthly_sp',tracking_code:'3564',order_spid:t[:transaction_reference],is_recurring:true,recurring_id:recurring.id,email:original.email,first_name:original.first_name,last_name:original.last_name,is_subsequent_recurring:true,expiry_month:t[:expiry_month].to_i,expiry_year:t[:expiry_year].to_i,executed_at:Time.parse(t[:executed_at]))
+                    donation.save
+                    #nbres = donation.create_in_nationbuilder
+                    if false#![200,201].include?(nbres.code)
+                        nbres.update_attribute(:success, false)
+                        nbres.update_attribute(:other_data, "Attempted to send to NB but failed on #{Time.now.iso8601}")
+                        fail_list.push({:transaction => t, :message => "Could not create in NationBuilder."})
+                    else
+                        nbres.update_attribute(:success, true)
+                    end
+                end
+            end
+        end
+        render json: {
+            fail_list: fail_list
+        }.to_json
+    end
+
     ### GEOSCAPE tmp
     def geoscape
         if params[:q].length < 500

@@ -12,6 +12,8 @@ Rails.application.routes.draw do
   get '/nb_oauth_callback', to: 'nboauths#redirect_code'
   get '/varstubs', to: 'general#see_env_var_stubs'
 
+  post '/reconcile_recurring', to: 'general#reconcile_recurring'
+
   # api
   post '/api/sandbox/refund', to: 'general#sandbox_refund'
   post '/api/refund', to: 'general#refund'
@@ -29,6 +31,7 @@ Rails.application.routes.draw do
   # Log in
   get '/login', to: 'sessions#new'
   post '/login', to: 'sessions#create'
+  get '/test_pdf', to: 'sessions#test_pdf'
 
   # Geoscape
   get '/geoscape', to: 'general#geoscape'

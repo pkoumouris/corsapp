@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_23_055656) do
+ActiveRecord::Schema[7.0].define(version: 2023_07_26_023308) do
   create_table "donations", force: :cascade do |t|
     t.integer "amount_in_cents"
     t.string "gateway_response_code"
@@ -44,6 +44,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_23_055656) do
     t.boolean "refunded"
     t.datetime "refunded_at"
     t.string "page_slug"
+    t.boolean "is_subsequent_recurring"
+    t.integer "expiry_month"
+    t.integer "expiry_year"
+    t.datetime "executed_at"
     t.index ["bank_transaction_spid"], name: "index_donations_on_bank_transaction_spid"
     t.index ["created_at"], name: "index_donations_on_created_at"
     t.index ["email"], name: "index_donations_on_email"

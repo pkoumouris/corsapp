@@ -64,4 +64,15 @@ class SessionsController < ApplicationController
             expires_at: General.find_by(name: "NB_EXPIRES_AT").value
         }.to_json
     end
+
+    def test_pdf
+        #html = "<h1>Hey!</h1><p>Here is a test</p>"
+        #kit = PDFKit.new(html, :page_size => 'Letter')
+        #send_data(kit.to_pdf, filename: SecureRandom.alphanumeric+'.pdf', type: 'application/pdf')
+        pdf = Prawn::Document.new(page_size: 'A4')
+        phtml = Prawn::Document.new(page_size: 'A4')
+        render json: {
+            success: true
+        }.to_json
+    end
 end
