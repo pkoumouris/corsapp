@@ -383,11 +383,11 @@ class GeneralController < ApplicationController
                     donation.save
                     nbres = donation.create_in_nationbuilder
                     if ![200,201].include?(nbres.code)
-                        nbres.update_attribute(:success, false)
-                        nbres.update_attribute(:other_data, "Attempted to send to NB but failed on #{Time.now.iso8601}")
+                        donation.update_attribute(:success, false)
+                        donation.update_attribute(:other_data, "Attempted to send to NB but failed on #{Time.now.iso8601}")
                         fail_list.push({:transaction => t, :message => "Could not create in NationBuilder."})
                     else
-                        nbres.update_attribute(:success, true)
+                        donation.update_attribute(:success, true)
                     end
                 end
             end
