@@ -60,7 +60,7 @@ gem 'oauth2'
 gem 'whenever', require: false
 
 #gem 'pdfkit'
-gem 'prawn-html'
+#gem 'prawn-html'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
