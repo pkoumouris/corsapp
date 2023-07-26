@@ -381,11 +381,15 @@ class GeneralController < ApplicationController
                 else
                     donation = Donation.new(amount_in_cents: t[:amount].to_i*100, gateway_response_code:'00',bank_transaction_spid:t[:bank_transaction_id],tracking_code_slug:'ov_w_monthly_sp',tracking_code:'3564',order_spid:t[:transaction_reference],is_recurring:true,recurring_id:recurring.id,email:original.email,first_name:original.first_name,last_name:original.last_name,is_subsequent_recurring:true,expiry_month:t[:expiry_month].to_i,expiry_year:t[:expiry_year].to_i,executed_at:Time.parse(t[:executed_at]))
                     donation.save
-                    nbres = donation.create_in_nationbuilder
-                    if ![200,201].include?(nbres.code)
-                        donation.update_attribute(:success, false)
-                        donation.update_attribute(:other_data, "Attempted to send to NB but failed on #{Time.now.iso8601}")
-                        fail_list.push({:transaction => t, :message => "Could not create in NationBuilder."})
+                    if false#!['0bTCMr-1684730512583', 'iPvT5r-1684817941445', 'vSC21n-1684840124902', 'O4O5s7-1684828402035', 'DQktWH-1684922861000', '4FR74s-1684978449681', 'zZUHvw-1684976213063', 'nCmsNU-1685064363637', 'srfsvv-1685064510267', 'qocCYc-1685070592819', 't6ORJj-1685062487690', 'vDxn6P-1685064740865', 'tB3Xha-1685420667481', 't863vW-1685505964994'].include?(donation.recurring.schedule_spid)
+                        nbres = donation.create_in_nationbuilder
+                        if ![200,201].include?(nbres.code)
+                            donation.update_attribute(:success, false)
+                            donation.update_attribute(:other_data, "Attempted to send to NB but failed on #{Time.now.iso8601}")
+                            fail_list.push({:transaction => t, :message => "Could not create in NationBuilder."})
+                        else
+                            donation.update_attribute(:success, true)
+                        end
                     else
                         donation.update_attribute(:success, true)
                     end
