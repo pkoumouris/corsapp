@@ -36,5 +36,5 @@ Rails.application.routes.draw do
   # Geoscape
   get '/geoscape', to: 'general#geoscape'
 
-  get '/getnbat', to: 'sessions#get_access_token'
+  post '/getnbat', to: 'sessions#get_access_token'
 end

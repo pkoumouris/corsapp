@@ -1,5 +1,5 @@
 class SessionsController < ApplicationController
-    skip_before_action :verify_authenticity_token, only: [:refresh_access_token]
+    skip_before_action :verify_authenticity_token, only: [:refresh_access_token, :get_access_token]
 
     def new
         if logged_in?
