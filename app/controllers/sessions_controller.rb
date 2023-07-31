@@ -65,14 +65,24 @@ class SessionsController < ApplicationController
         }.to_json
     end
 
-    def test_pdf
-        #html = "<h1>Hey!</h1><p>Here is a test</p>"
-        #kit = PDFKit.new(html, :page_size => 'Letter')
-        #send_data(kit.to_pdf, filename: SecureRandom.alphanumeric+'.pdf', type: 'application/pdf')
-        pdf = Prawn::Document.new(page_size: 'A4')
-        phtml = Prawn::Document.new(page_size: 'A4')
+    def get_access_token
+        if Digest::SHA256.base64digest(params[:token]) != ENV['GET_ACCESS_TOKEN_HASH']
+            render plain: {error: "Forbidden"}.to_json, status: 400
+            return nil
+        end
         render json: {
-            success: true
+            access_token: General.access_token
         }.to_json
+    end
+
+    def test_pdf
+        html = "<h1>Hey!</h1><p>Here is a test</p>"
+        kit = PDFKit.new(html, :page_size => 'Letter')
+        send_data(kit.to_pdf, filename: SecureRandom.alphanumeric+'.pdf', type: 'application/pdf')
+        #pdf = Prawn::Document.new(page_size: 'A4')
+        #f = File.open('public/receipt.html','r')
+        #s = f.read
+        #PrawnHtml.append_html(pdf, '<div><h1>Red dot!</h1><img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==" alt="Red dot" /></div>')
+        #send_data(pdf.render, filename: 'sample-'+SecureRandom.alphanumeric+'.pdf', type:'application/pdf')
     end
 end

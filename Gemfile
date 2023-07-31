@@ -59,7 +59,7 @@ gem 'oauth2'
 
 gem 'whenever', require: false
 
-#gem 'pdfkit'
+gem 'pdfkit'
 #gem 'prawn-html'
 
 group :development, :test do

@@ -175,6 +175,7 @@ GEM
       rack (>= 1.2, < 4)
       snaky_hash (~> 2.0)
       version_gem (~> 1.1)
+    pdfkit (0.8.7.3)
     public_suffix (5.0.3)
     puma (5.6.6)
       nio4r (~> 2.0)
@@ -293,6 +294,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   oauth2
+  pdfkit
   puma (~> 5.0)
   rack-cors
   rails (~> 7.0.4, >= 7.0.4.3)
