@@ -35,6 +35,11 @@ Rails.application.routes.draw do
 
   # Geoscape
   get '/geoscape', to: 'general#geoscape'
+  get '/broadgeoscape', to: 'general#geoscape_broad'
 
   post '/getnbat', to: 'sessions#get_access_token'
+
+  # Comms preferences
+  get '/commspreferences', to: 'sessions#comms_preferences'
+  post '/commspreferences', to: 'sessions#update_comms_preferences_api'
 end

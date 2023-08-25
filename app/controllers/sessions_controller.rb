@@ -76,13 +76,51 @@ class SessionsController < ApplicationController
     end
 
     def test_pdf
-        html = "<h1>Hey!</h1><p>Here is a test</p>"
-        kit = PDFKit.new(html, :page_size => 'Letter')
-        send_data(kit.to_pdf, filename: SecureRandom.alphanumeric+'.pdf', type: 'application/pdf')
+        #html = "<h1>Hey!</h1><p>Here is a test</p>"
+        #kit = PDFKit.new(html, :page_size => 'Letter')
+        #send_data(kit.to_pdf, filename: SecureRandom.alphanumeric+'.pdf', type: 'application/pdf')
         #pdf = Prawn::Document.new(page_size: 'A4')
         #f = File.open('public/receipt.html','r')
         #s = f.read
         #PrawnHtml.append_html(pdf, '<div><h1>Red dot!</h1><img src="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==" alt="Red dot" /></div>')
         #send_data(pdf.render, filename: 'sample-'+SecureRandom.alphanumeric+'.pdf', type:'application/pdf')
+    end
+
+    def update_comms_preferences_api
+        res = HTTParty.post('https://aclportal.staging.wemapac.io/webservices/commspreferences/changePrefs',
+            :headers => {
+                'Content-Type'=>'application/json'
+            },
+            :body => {
+                'Update Email'=>params[:email],
+                'Update Token'=>params[:token],
+                'Update Preferences'=>params[:preferences].map { |p| {'Preference Name' => p} }
+            }.to_json)
+        puts "BODY"
+        puts({
+                'Update Email'=>params[:email],
+                'Update Token'=>params[:token],
+                'Update Preferences'=>params[:preferences].map { |p| {'Preference Name' => p} }
+            })
+        render json: {
+            success: res.code == 200 && res['Update Success'],
+            res_code: res.code
+        }.to_json
+    end
+
+    def comms_preferences
+        @email = params[:email]
+        @token = params[:token]
+        res = HTTParty.post('https://aclportal.staging.wemapac.io/webservices/commspreferences/getInfo',
+            :headers => {
+                'Content-Type'=>'application/json'
+            },
+            :body => {
+                'Email Lookup'=>@email,
+                'Comms Token'=>@token
+            }.to_json)
+        puts "RES CODE"
+        puts res.code
+        @preferences = res['Selected Comms Preferences']
     end
 end

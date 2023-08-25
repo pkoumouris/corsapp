@@ -1,0 +1,215 @@
+<head>
+<style>
+@font-face {
+  font-family: "FieldworkHum";
+  font-weight: 600;
+  src: url("/Fieldwork-Hum-Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: "FieldworkHum";
+  font-weight: 400;
+  src: url("/Fieldwork-Hum-Regular.ttf") format("truetype");
+}
+
+#main-container {
+    text-align: center;
+    font-family: "FieldworkHum";
+    font-weight: 400;
+}
+
+#main-container table {
+    margin: auto;
+}
+
+body {
+    font-size: 18px;
+}
+
+h1 {
+    font-family: "FieldworkHum";
+    font-weight: 600;
+    color: #e75819;
+}
+
+/*.toggle-container {
+    transition-properties: background-color, padding-left;
+}*/
+.toggle-container {
+    width: 40px;
+    height: 16px;
+    background-color: #c9c9c9;
+    border-radius: 13px;
+    padding: 4px;
+    cursor: pointer;
+    transition-properties: background-color, padding-left;
+    transition-duration: 0.3s;
+}
+/*.toggle-container-on {
+    width: 16px;
+    height: 16px;
+    background-color: green;
+    border-radius: 13px;
+    padding: 4px;
+    padding-left:28px;
+    cursor: pointer;
+}*/
+
+.toggle-ball {
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+#prefs-container tr td:nth-child(1) {
+    width: 80px;
+    padding: 10px;
+}
+
+#prefs-container tr td:nth-child(2) {
+    width: 260px;
+    text-align: left;
+    padding: 10px;
+    font-size: 22px;
+}
+
+.general-button {
+    background-color: #e75819;
+    font-family: "FieldworkHum";
+    font-weight: 400;
+    width: 100px;
+    color: #fff;
+    padding: 10px;
+    font-size: 18px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#save-button-container {
+    margin-top: 20px;
+}
+
+</style>
+</head>
+
+<div id="main-container">
+    <h1>
+        Change your communication preferences
+    </h1>
+    <p>
+        For <%= @email %>
+    </p>
+    <table id="prefs-container">
+        
+    </table>
+    <div id="save-button-container">
+        <button id="save-button" class="general-button" onclick="update_preferences()">
+            Saved
+        </button>
+    </div>
+</div>
+
+<script>
+let prefs = [
+    {name:'News Updates',selected:false},
+    {name:'Taking Action',selected:false},
+    {name:'Giving Opportunities',selected:false},
+    {name:'Prayer Opportunities',selected:false},
+    {name:'Upcoming Events',selected:false},
+    {name:'Upcoming Training',selected:false},
+    {name:'Opt Out on Incoming calls',selected:false}
+];
+function a(){
+    console.log('a');
+    let x = document.getElementById('tgt');
+    console.log(x.style);
+    if (x.style.width !== '16px'){
+        console.log('1');
+        x.style.backgroundColor = '#00c943';
+        x.style.paddingLeft = '28px';
+        x.style.width = '16px';
+    } else {
+        console.log('2');
+        x.style.backgroundColor = '#c9c9c9';
+        x.style.paddingLeft = '4px';
+        x.style.width = '40px';
+    }
+}
+
+function toggle(index){
+    document.getElementById('save-button').innerHTML = "Save";
+    let x = document.getElementById('toggle-'+String(index));
+    console.log(prefs);
+    if (x.style.width !== '16px'){
+        prefs[index].selected = true;
+        x.style.backgroundColor = '#00c943';
+        x.style.paddingLeft = '28px';
+        x.style.width = '16px';
+    } else {
+        prefs[index].selected = false;
+        x.style.backgroundColor = '#c9c9c9';
+        x.style.paddingLeft = '4px';
+        x.style.width = '40px';
+    }
+}
+
+function update_preferences(){
+    // commspreferences
+    document.getElementById('save-button').innerHTML = "Saving...";
+    let res = [];
+    prefs.forEach((v,j) => v.selected ? res.push(v.name) : false);
+    console.log("res");
+    console.log(res);
+    fetch("/commspreferences",{
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'x-csrf-token': '<%= form_authenticity_token %>'
+        },
+        body: JSON.stringify({
+            email: "<%= @email %>",
+            token: "<%= @token %>",
+            preferences: res
+        })
+    }).then( (response) => {
+        if (response.ok){
+            return response.json();
+        }
+        document.getElementById('refund-secondary-message').innerHTML = "Error encountered. Please keep this page and speak to your system administrator.";
+        throw new Error('Request fail');
+    }).then(json => {
+        console.log("Result");
+        console.log(json);
+        if (json.success){
+            document.getElementById('save-button').innerHTML = "Saved";
+        } else {
+            document.getElementById('save-button').innerHTML = "Error";
+        }
+    });
+}
+
+const supplied = "<%= @preferences %>".split(',').map((x, i) => x.trim());
+console.log(prefs);
+let i;
+for (i = 0 ; i < prefs.length ; i++){
+    prefs[i].selected = (supplied.includes(prefs[i].name));
+}
+console.log(prefs);
+//document.getElementById('prefs-container').innerHTML = prefs.map((x,i) => "<tr><td></td><td>"+x+"</td></tr>" );
+
+for (i = 0 ; i < prefs.length ; i++){
+    document.getElementById('prefs-container').innerHTML += '<tr><td><div id="toggle-'+String(i)+'" class="toggle-container" onclick="toggle('+String(i)+')"><div class="toggle-ball" /></div></td><td>'+prefs[i].name+"</td></tr>";
+}
+for (i = 0 ; i < prefs.length ; i++){
+    if (prefs[i].selected){
+        toggle(i);
+    }
+}
+
+//function 
+
+</script>
