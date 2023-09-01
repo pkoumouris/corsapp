@@ -286,6 +286,42 @@ class Donation < ApplicationRecord
         end
     end
 
+    # In test
+    def Donation.make_payment_with_details(amount, token, ip, email, sp_env)
+        order_id = SecureRandom.uuid
+        idem_key = SecureRandom.uuid
+        response = HTTParty.post(SP_LIVE && sp_env == "LIVE" ? "https://payments.auspost.net.au/v2/payments" : "https://payments-stest.npe.auspost.zone/v2/payments",
+            :body => {
+                'amount'=>amount,
+                'merchantCode'=>SP_LIVE && sp_env == "LIVE" ? SP_MERCHANT_CODE : "5AR0055",
+                'token'=>token,
+                'ip'=>ip,
+                'orderId'=>order_id,
+                'fraudCheckDetails'=>{
+                    'fraudCheckType'=>'FRAUD_GUARD',
+                    'customerDetails'=>{
+                        'emailAddress'=>email
+                    }
+                }
+            }.to_json,
+            :headers => {
+                'Content-Type'=>'application/json',
+                'Idempotency-Key'=>idem_key,
+                'Authorization'=>'Bearer '+General.sp_access_token(sp_env)
+            })
+        if response.code != 200 && response.code != 201
+            puts "The following response code was found: " + response.code.to_s
+            puts response
+            raise "Not successful"
+        end
+        if ['00','08','11','77','16'].include?(response['gatewayResponseCode'])
+            donation = Donation.new(amount_in_cents: amount, gateway_response_code: '00', success: true, currency: 'AUD', order_spid: response['orderId'], bank_transaction_spid: response['bankTransactionId'], test: sp_env != "LIVE")
+            return donation
+        end
+        donation = Donation.new(amount_in_cents: amount, gateway_response_code: response['gatewayResponseCode'], success: false, currency: 'AUD', order_spid: response['orderId'], bank_transaction_spid: response['bankTransactionId'], test: sp_env != "LIVE")
+        return donation
+    end
+
     def Donation.make_payment(amount, token, ip, sp_env) # SP env toggle
         order_id = SecureRandom.uuid
         idem_key = SecureRandom.uuid
