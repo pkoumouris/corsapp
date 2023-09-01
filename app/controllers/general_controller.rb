@@ -58,8 +58,8 @@ class GeneralController < ApplicationController
         end
         # 1. Make the payment
         #sp_env = (params[:env] == "SANDBOX" && Digest::SHA256.base64digest(params[:env_token]) == "vg1aJVAe9FZfITG9YptD9LIh4VUa7YQcCocxlL9NUyY=") || !SP_LIVE ? "SANDBOX" : "LIVE"
-        #donation = Donation.make_payment(params[:amount].to_i, params[:token], request.remote_ip, sp_env)
-        donation = Donation.make_payment_with_details(params[:amount], params[:token], request.remote_ip, params[:email], sp_env)
+        donation = Donation.make_payment(params[:amount].to_i, params[:token], request.remote_ip, sp_env)
+        #donation = Donation.make_payment_with_details(params[:amount], params[:token], request.remote_ip, params[:email], sp_env)
         if !donation.success
             donation.save
             render json: {
