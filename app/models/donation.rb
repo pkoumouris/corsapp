@@ -175,7 +175,8 @@ class Donation < ApplicationRecord
             })
         if (nb_resp.code == 201 || nb_resp.code == 200) && !nb_resp['data'].nil?
             self.update_attribute(:nbid,nb_resp['data']['id'])
-            #self.update_attribute(:signup_nbid,nb_resp['data']['attributes']['signup_id'])
+            self.update_attribute(:signup_nbid,nb_resp['data']['attributes']['signup_id'])
+            self.update_signup
         end
         return nb_resp
     end
@@ -222,7 +223,8 @@ class Donation < ApplicationRecord
         end
         if (nb_resp.code == 201 || nb_resp.code == 200) && !nb_resp['data'].nil?
             self.update_attribute(:nbid,nb_resp['data']['id'])
-            #self.update_attribute(:signup_nbid,nb_resp['data']['attributes']['signup_id'])
+            self.update_attribute(:signup_nbid,nb_resp['data']['attributes']['signup_id'])
+            self.update_signup
         end
         return nb_resp
     end
