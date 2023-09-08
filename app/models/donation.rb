@@ -241,7 +241,7 @@ class Donation < ApplicationRecord
     end
 
     def update_signup
-        resp = HTTParty.post("https://acl.nationbuilder.com/api/v2/signups/#{self.signup_nbid}",
+        resp = HTTParty.patch("https://acl.nationbuilder.com/api/v2/signups/#{self.signup_nbid}",
             :body=>{
                 'data'=>{
                     'id'=>self.signup_nbid,
