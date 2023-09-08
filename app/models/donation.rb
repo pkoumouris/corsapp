@@ -252,6 +252,7 @@ class Donation < ApplicationRecord
                 }
             }.to_json,
             :headers=>{
+                'Content-Type'=>'application/json',
                 'Accept'=>'application/json',
                 'Authorization'=>'Bearer '+General.access_token
             })
