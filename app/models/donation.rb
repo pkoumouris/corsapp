@@ -173,8 +173,9 @@ class Donation < ApplicationRecord
                 'Accept'=>'application/json',
                 'Authorization'=>'Bearer '+General.access_token
             })
-        if nb_resp.code == 201 && !nb_resp['data'].nil?
+        if (nb_resp.code == 201 || nb_resp.code == 200) && !nb_resp['data'].nil?
             self.update_attribute(:nbid,nb_resp['data']['id'])
+            #self.update_attribute(:signup_nbid,nb_resp['data']['attributes']['signup_id'])
         end
         return nb_resp
     end
@@ -219,8 +220,9 @@ class Donation < ApplicationRecord
                 puts "Aw schucks, couldn't add the tag"
             end
         end
-        if nb_resp.code == 201 && !nb_resp['data'].nil?
+        if (nb_resp.code == 201 || nb_resp.code == 200) && !nb_resp['data'].nil?
             self.update_attribute(:nbid,nb_resp['data']['id'])
+            #self.update_attribute(:signup_nbid,nb_resp['data']['attributes']['signup_id'])
         end
         return nb_resp
     end
@@ -236,6 +238,24 @@ class Donation < ApplicationRecord
         else
             return nil
         end
+    end
+
+    def update_signup
+        resp = HTTParty.post("https://acl.nationbuilder.com/api/v2/signups/#{self.signup_nbid}",
+            :body=>{
+                'data'=>{
+                    'id'=>self.signup_nbid,
+                    'type'=>'signups',
+                    'attributes'=>{
+                        'email_opt_in'=>!!self.send_email_updates
+                    }
+                }
+            }.to_json,
+            :headers=>{
+                'Accept'=>'application/json',
+                'Authorization'=>'Bearer '+General.access_token
+            })
+        return resp.code == 200 || resp.code == 201
     end
 
     def fill_in_tracking_code_id
