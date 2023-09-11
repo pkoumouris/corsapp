@@ -98,6 +98,11 @@ h1 {
     <h1>
         Change your communication preferences
     </h1>
+    <div id="msg-tgt">
+    </div>
+    <p>
+        Keep me updated on:
+    </p>
     <p>
         For <%= @email %>
     </p>
@@ -112,7 +117,7 @@ h1 {
 </div>
 
 <script>
-let prefs = [
+/*let prefs = [
     {name:'News Updates',selected:false},
     {name:'Taking Action',selected:false},
     {name:'Giving Opportunities',selected:false},
@@ -120,7 +125,33 @@ let prefs = [
     {name:'Upcoming Events',selected:false},
     {name:'Upcoming Training',selected:false},
     {name:'Opt Out on Incoming calls',selected:false}
-];
+];*/
+let prefs = {
+    'optout-giving':{
+        name: 'Giving Opportunities',
+        selected: false
+    },
+    'optout-enews':{
+        name: 'News Updates',
+        selected: false
+    },
+    'optout-prayer':{
+        name: 'Prayer Opportunities',
+        selected: false
+    },
+    'optout-events':{
+        name: 'Upcoming Events',
+        selected: false
+    },
+    'optout-polcm':{
+        name: 'Taking Action',
+        selected: false
+    },
+    'optout-training':{
+        name: 'Upcoming Training',
+        selected: false
+    }
+}
 function a(){
     console.log('a');
     let x = document.getElementById('tgt');
@@ -138,20 +169,53 @@ function a(){
     }
 }
 
-function toggle(index){
+const all = ["optout-giving", "optout-enews", "optout-prayer", "optout-events", "optout-polcm", "optout-training"];
+
+function toggle(code){
     document.getElementById('save-button').innerHTML = "Save";
-    let x = document.getElementById('toggle-'+String(index));
+    let x = document.getElementById('toggle_'+code);
     console.log(prefs);
     if (x.style.width !== '16px'){
-        prefs[index].selected = true;
+        prefs[code].selected = true;
         x.style.backgroundColor = '#00c943';
         x.style.paddingLeft = '28px';
         x.style.width = '16px';
     } else {
-        prefs[index].selected = false;
+        prefs[code].selected = false;
         x.style.backgroundColor = '#c9c9c9';
         x.style.paddingLeft = '4px';
         x.style.width = '40px';
+    }
+}
+
+let toggle_all_status = false;
+
+function toggle_all(){
+    document.getElementById('save-button').innerHTML = "Save";
+    let x = document.getElementById('toggle_all');
+    let i;
+    console.log(prefs);
+    console.log(toggle_all_status);
+    if (!toggle_all_status){
+        x.style.backgroundColor = '#00c943';
+        x.style.paddingLeft = '28px';
+        x.style.width = '16px';
+        for (i = 0 ; i < all.length ; i++){
+            if (!prefs[all[i]].selected){
+                toggle(all[i]);
+            }
+        }
+        toggle_all_status = true;
+    } else {
+        x.style.backgroundColor = '#c9c9c9';
+        x.style.paddingLeft = '4px';
+        x.style.width = '40px';
+        for (i = 0 ; i < all.length ; i++){
+            if (prefs[all[i]].selected){
+                toggle(all[i]);
+            }
+        }
+        toggle_all_status = false;
     }
 }
 
@@ -159,9 +223,11 @@ function update_preferences(){
     // commspreferences
     document.getElementById('save-button').innerHTML = "Saving...";
     let res = [];
-    prefs.forEach((v,j) => v.selected ? res.push(v.name) : false);
+    //prefs.forEach((v,j) => v.selected ? res.push(v) : false);
+    all.forEach((v, j) => !prefs[v].selected ? res.push(v) : false);
     console.log("res");
     console.log(res);
+    //return false;
     fetch("/commspreferences",{
         method: 'POST',
         credentials: 'include',
@@ -182,17 +248,15 @@ function update_preferences(){
         document.getElementById('refund-secondary-message').innerHTML = "Error encountered. Please keep this page and speak to your system administrator.";
         throw new Error('Request fail');
     }).then(json => {
-        console.log("Result");
-        console.log(json);
         if (json.success){
             document.getElementById('save-button').innerHTML = "Saved";
         } else {
-            document.getElementById('save-button').innerHTML = "Error";
+            document.getElementById('msg-tgt').innerHTML = "There was an error.";
         }
     });
 }
 
-const supplied = "<%= @preferences %>".split(',').map((x, i) => x.trim());
+/*const supplied = "<%= @preferences %>".split(',').map((x, i) => x.trim());
 console.log(prefs);
 let i;
 for (i = 0 ; i < prefs.length ; i++){
@@ -202,13 +266,28 @@ console.log(prefs);
 //document.getElementById('prefs-container').innerHTML = prefs.map((x,i) => "<tr><td></td><td>"+x+"</td></tr>" );
 
 for (i = 0 ; i < prefs.length ; i++){
-    document.getElementById('prefs-container').innerHTML += '<tr><td><div id="toggle-'+String(i)+'" class="toggle-container" onclick="toggle('+String(i)+')"><div class="toggle-ball" /></div></td><td>'+prefs[i].name+"</td></tr>";
+    document.getElementById('prefs-container').innerHTML += '<tr><td><div id="toggle-'+String(i)+'" class="toggle-container" onclick="toggle(\''+String(i)+'\')"><div class="toggle-ball" /></div></td><td>'+prefs[i].name+"</td></tr>";
 }
+
 for (i = 0 ; i < prefs.length ; i++){
     if (prefs[i].selected){
         toggle(i);
     }
+}*/
+let avant = <%= raw @preferences %>;
+
+let i, x;
+for (i = 0 ; i < all.length ; i++){
+    document.getElementById('prefs-container').innerHTML += '<tr><td><div id="toggle_'+all[i]+'" class="toggle-container" onclick="toggle(\''+all[i]+'\')"><div class="toggle-ball" /></div></td><td>'+prefs[all[i]].name+"</td></tr>";
+    toggle(all[i]);
 }
+
+document.getElementById('prefs-container').innerHTML += '<tr><td style="padding-top:20px;"><div id="toggle_all" class="toggle-container" onclick="toggle_all()"><div class="toggle-ball" /></div></td><td style="padding-top:20px;">'+'Select all'+"</td></tr>";
+
+for (i = 0 ; i < avant.length ; i++){
+    toggle(avant[i]);
+}
+
 
 //function 
 

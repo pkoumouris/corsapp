@@ -1,6 +1,9 @@
 class SessionsController < ApplicationController
     skip_before_action :verify_authenticity_token, only: [:refresh_access_token, :get_access_token]
 
+    PREFERENCE_SECRET = Rails.env == "production" ? ENV['PREFERENCE_SECRET'] : '8QKI4a57dDvKoM2v'
+    CM_AUTH = 'Basic '+ENV['CM_AUTH']
+
     def new
         if logged_in?
             redirect_to root_url
@@ -87,40 +90,97 @@ class SessionsController < ApplicationController
     end
 
     def update_comms_preferences_api
-        res = HTTParty.post('https://aclportal.staging.wemapac.io/webservices/commspreferences/changePrefs',
+        if Digest::SHA256.hexdigest(params[:email]+':'+PREFERENCE_SECRET) != params[:token]
+            render json: {
+                success: false
+            }.to_json, status: 400
+            return nil
+        end
+        results = []
+        res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/42d1a271424b7a6a8650c810575c3fb1.json?email=#{params[:email]}",
             :headers => {
-                'Content-Type'=>'application/json'
+                'Authorization'=>CM_AUTH
             },
             :body => {
-                'Update Email'=>params[:email],
-                'Update Token'=>params[:token],
-                'Update Preferences'=>params[:preferences].map { |p| {'Preference Name' => p} }
+                'EmailAddress'=>params[:email],
+                'CustomFields'=>[{
+                    'Key'=>'Tags',
+                    'Value'=>'',
+                    'Clear'=>true
+                }],
+                'ConsentToTrack'=>'Yes'
             }.to_json)
-        puts "BODY"
-        puts({
-                'Update Email'=>params[:email],
-                'Update Token'=>params[:token],
-                'Update Preferences'=>params[:preferences].map { |p| {'Preference Name' => p} }
-            })
+        results.push(res.code)
+        res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/42d1a271424b7a6a8650c810575c3fb1.json?email=#{params[:email]}",
+            :headers => {
+                'Authorization'=>CM_AUTH
+            },
+            :body => {
+                'EmailAddress'=>params[:email],
+                'CustomFields'=>[{
+                    'Key'=>'Tags',
+                    'Value'=>'',
+                    'Clear'=>true
+                }],
+                'ConsentToTrack'=>'Yes'
+            }.to_json)
+        results.push(res.code)
+        if params[:preferences].length > 0
+            res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/42d1a271424b7a6a8650c810575c3fb1.json?email=#{params[:email]}",
+                :headers => {
+                    'Authorization'=>CM_AUTH
+                },
+                :body => {
+                    'EmailAddress'=>params[:email],
+                    'CustomFields'=>params[:preferences].map { |p| {'Key'=>'Tags','Value'=>p} },
+                    'ConsentToTrack'=>'Yes'
+                }.to_json)
+            results.push(res.code)
+        end
+        #res = HTTParty.post('https://aclportal.staging.wemapac.io/webservices/commspreferences/changePrefs',
+        #    :headers => {
+        #        'Content-Type'=>'application/json'
+        #    },
+        #    :body => {
+        #        'Update Email'=>params[:email],
+        #        'Update Token'=>params[:token],
+        #        'Update Preferences'=>params[:preferences].map { |p| {'Preference Name' => p} }
+        #    }.to_json)
+        #puts "BODY"
+        #puts({
+        #        'Update Email'=>params[:email],
+        #        'Update Token'=>params[:token],
+        #        'Update Preferences'=>params[:preferences].map { |p| {'Preference Name' => p} }
+        #    })
+        #render json: {
+        #    success: res.code == 200 && res['Update Success'],
+        #    res_code: res.code
+        #}.to_json
         render json: {
-            success: res.code == 200 && res['Update Success'],
-            res_code: res.code
+            success: results.map { |r| r==200||r==201 }.uniq == [true]
         }.to_json
     end
 
     def comms_preferences
         @email = params[:email]
         @token = params[:token]
-        res = HTTParty.post('https://aclportal.staging.wemapac.io/webservices/commspreferences/getInfo',
-            :headers => {
-                'Content-Type'=>'application/json'
-            },
-            :body => {
-                'Email Lookup'=>@email,
-                'Comms Token'=>@token
-            }.to_json)
-        puts "RES CODE"
-        puts res.code
-        @preferences = res['Selected Comms Preferences']
+        #res = HTTParty.post('https://aclportal.staging.wemapac.io/webservices/commspreferences/getInfo',
+        #    :headers => {
+        #        'Content-Type'=>'application/json'
+        #    },
+        #    :body => {
+        #        'Email Lookup'=>@email,
+        #        'Comms Token'=>@token
+        #    }.to_json)
+        if Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET) != @token
+            render '/404'
+            return nil
+        end
+        res = HTTParty.get("https://api.createsend.com/api/v3.3/subscribers/42d1a271424b7a6a8650c810575c3fb1.json?email=#{@email}&includetrackingpreference=true",
+            :headers=>{
+                'Authorization'=>CM_AUTH,
+                'Accept'=>'*/*'
+            })
+        @preferences = res['CustomFields'].map { |c| c['Value'] }
     end
 end
