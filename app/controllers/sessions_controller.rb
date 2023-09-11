@@ -1,8 +1,8 @@
 class SessionsController < ApplicationController
     skip_before_action :verify_authenticity_token, only: [:refresh_access_token, :get_access_token]
 
-    PREFERENCE_SECRET = Rails.env == "production" ? ENV['PREFERENCE_SECRET'] : '8QKI4a57dDvKoM2v'
-    CM_AUTH = 'Basic '+ENV['CM_AUTH']
+    PREFERENCE_SECRET = 'a'#Rails.env == "production" ? ENV['PREFERENCE_SECRET'] : '8QKI4a57dDvKoM2v'
+    CM_AUTH = 'b'#'Basic '+ENV['CM_AUTH']
 
     def new
         if logged_in?
