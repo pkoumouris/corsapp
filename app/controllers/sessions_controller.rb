@@ -181,6 +181,10 @@ class SessionsController < ApplicationController
                 'Authorization'=>CM_AUTH,
                 'Accept'=>'*/*'
             })
+        if res.code != 200
+            render '/500'
+            return nil
+        end
         @preferences = res['CustomFields'].map { |c| c['Value'] }
     end
 end
