@@ -101,10 +101,7 @@ h1 {
     <div id="msg-tgt">
     </div>
     <p>
-        Keep me updated on:
-    </p>
-    <p>
-        For <%= @email %>
+        Keep <b><%= @email %></b> updated on:
     </p>
     <table id="prefs-container">
         
@@ -282,7 +279,7 @@ for (i = 0 ; i < all.length ; i++){
     toggle(all[i]);
 }
 
-document.getElementById('prefs-container').innerHTML += '<tr><td style="padding-top:20px;"><div id="toggle_all" class="toggle-container" onclick="toggle_all()"><div class="toggle-ball" /></div></td><td style="padding-top:20px;">'+'Select all'+"</td></tr>";
+document.getElementById('prefs-container').innerHTML += '<tr><td style="padding-top:20px;"><div id="toggle_all" class="toggle-container" onclick="toggle_all()"><div class="toggle-ball" /></div></td><td style="padding-top:20px;">'+'Select all (you will be opted in/out of all)'+"</td></tr>";
 
 for (i = 0 ; i < avant.length ; i++){
     toggle(avant[i]);

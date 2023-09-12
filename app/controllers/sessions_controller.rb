@@ -1,8 +1,8 @@
 class SessionsController < ApplicationController
     skip_before_action :verify_authenticity_token, only: [:refresh_access_token, :get_access_token]
 
-    PREFERENCE_SECRET = 'a'#Rails.env == "production" ? ENV['PREFERENCE_SECRET'] : '8QKI4a57dDvKoM2v'
-    CM_AUTH = 'b'#'Basic '+ENV['CM_AUTH']
+    PREFERENCE_SECRET = Rails.env == "production" ? ENV['PREFERENCE_SECRET'] : '8QKI4a57dDvKoM2v'
+    CM_AUTH = Rails.env == "production" ? 'Basic '+ENV['CM_AUTH'] : 'Basic WW0yT2pOWXlMZkgzM0NwNVBrV2taRkEzNHF1cHVLc0J2Q3BMV24vcUNLZjZaa1ZXbERERzNxTWFJRGtnNDNyVzdVRlNuT0VoeDF6ZVJDL0xBWDQrc25rQUxMdFFBSUl3dGNwNk1US1lvNDUzYU9HOHhDK2dzR0U4WmZLR0VROEUwblVhQ2lLbEFnYVFCYkhlRlo2MjZRPT06eA=='
 
     def new
         if logged_in?
@@ -173,7 +173,7 @@ class SessionsController < ApplicationController
         #        'Comms Token'=>@token
         #    }.to_json)
         if Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET) != @token
-            render '/404'
+            redirect_to "/404?reason=failedauth&email=#{@email}&token#{@token}&digest=#{Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)}"
             return nil
         end
         res = HTTParty.get("https://api.createsend.com/api/v3.3/subscribers/42d1a271424b7a6a8650c810575c3fb1.json?email=#{@email}&includetrackingpreference=true",
@@ -182,7 +182,7 @@ class SessionsController < ApplicationController
                 'Accept'=>'*/*'
             })
         if res.code != 200
-            render '/500'
+            redirect_to '/500?reason=failed_auth'
             return nil
         end
         @preferences = res['CustomFields'].map { |c| c['Value'] }
