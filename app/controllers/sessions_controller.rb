@@ -194,7 +194,7 @@ class SessionsController < ApplicationController
                     'Authorization'=>CM_AUTH
                 },
                 :body=>{
-                    'To'=>[email],
+                    'To'=>[@email],
                     'CC'=>nil,
                     'BCC'=>nil,
                     'Attachments'=>[],
