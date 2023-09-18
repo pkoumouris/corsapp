@@ -272,6 +272,8 @@ for (i = 0 ; i < prefs.length ; i++){
     }
 }*/
 let avant = <%= raw @preferences %>;
+console.log("avant");
+console.log(avant);
 
 let i, x;
 for (i = 0 ; i < all.length ; i++){
@@ -282,7 +284,11 @@ for (i = 0 ; i < all.length ; i++){
 document.getElementById('prefs-container').innerHTML += '<tr><td style="padding-top:20px;"><div id="toggle_all" class="toggle-container" onclick="toggle_all()"><div class="toggle-ball" /></div></td><td style="padding-top:20px;">'+'Select all (you will be opted in/out of all)'+"</td></tr>";
 
 for (i = 0 ; i < avant.length ; i++){
-    toggle(avant[i]);
+    if (prefs[avant[i]] != undefined){
+        console.log("Toggling");
+        console.log(avant[i]);
+        toggle(avant[i]);
+    }
 }
 
 
