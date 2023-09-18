@@ -51,7 +51,7 @@ gem "bootsnap", require: false
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data'#, platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 # httparty for easy API calls if necessary
-gem 'httparty'
+gem 'httparty', '~> 0.6.1'
 
 gem 'rack-cors'
 
@@ -61,6 +61,8 @@ gem 'whenever', require: false
 
 gem 'pdfkit'
 #gem 'prawn-html'
+
+#gem 'createsend'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

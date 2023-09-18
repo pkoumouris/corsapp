@@ -1,0 +1,42 @@
+<head>
+<style>
+@font-face {
+  font-family: "FieldworkHum";
+  font-weight: 600;
+  src: url("/Fieldwork-Hum-Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: "FieldworkHum";
+  font-weight: 400;
+  src: url("/Fieldwork-Hum-Regular.ttf") format("truetype");
+}
+body {
+    font-family: 'FieldworkHum';
+    text-align: center;
+}
+</style>
+</head>
+<body>
+<div>
+    <img src="https://www.acl.org.au/wp-content/uploads/2023/04/ACL_Logo_POS_RGB_final.png" />
+    <% if [200,201,202].include?(@result) %>
+    <div>
+        <h1>
+            Email successfully sent
+        </h1>
+        <p>
+            We have sent you an email with a link to update the preferences for <%= @email %>.
+        </p>
+    </div>
+    <% else %>
+    <div>
+        <h1>
+            Error encountered
+        </h1>
+        <p>
+            Apologies, as there was an error with your request. Please contact natoffice@acl.org.au
+        </p>
+    </div>
+    <% end %>
+</div>
+</body>

@@ -2,7 +2,10 @@ class SessionsController < ApplicationController
     skip_before_action :verify_authenticity_token, only: [:refresh_access_token, :get_access_token]
 
     PREFERENCE_SECRET = Rails.env == "production" ? ENV['PREFERENCE_SECRET'] : '8QKI4a57dDvKoM2v'
-    CM_AUTH = Rails.env == "production" ? 'Basic '+ENV['CM_AUTH'] : 'Basic WW0yT2pOWXlMZkgzM0NwNVBrV2taRkEzNHF1cHVLc0J2Q3BMV24vcUNLZjZaa1ZXbERERzNxTWFJRGtnNDNyVzdVRlNuT0VoeDF6ZVJDL0xBWDQrc25rQUxMdFFBSUl3dGNwNk1US1lvNDUzYU9HOHhDK2dzR0U4WmZLR0VROEUwblVhQ2lLbEFnYVFCYkhlRlo2MjZRPT06eA=='
+    CM_AUTH = Rails.env == "production" ? 'Basic '+ENV['CM_AUTH'] : ''
+    CM_LIST_ID = Rails.env == "production" ? "819d4c49e69290315797754839ad14e1" : "42d1a271424b7a6a8650c810575c3fb1"
+    CM_CLIENT_ID = Rails.env == "production" ? "ba2383a86df105accc1562e64b4316af" : "a9eef8b7cb9a43b3c35055c5510d0d12"
+    SMART_EMAIL_ID = Rails.env == "production" ? "7d18aa78-d22a-4ca9-9546-42c4bd6d095d" : "ccc7f472-9810-4102-a351-8f43e92e4e4b"
 
     def new
         if logged_in?
@@ -97,7 +100,7 @@ class SessionsController < ApplicationController
             return nil
         end
         results = []
-        res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/42d1a271424b7a6a8650c810575c3fb1.json?email=#{params[:email]}",
+        res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/#{CM_LIST_ID}.json?email=#{params[:email]}",
             :headers => {
                 'Authorization'=>CM_AUTH
             },
@@ -111,7 +114,7 @@ class SessionsController < ApplicationController
                 'ConsentToTrack'=>'Yes'
             }.to_json)
         results.push(res.code)
-        res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/42d1a271424b7a6a8650c810575c3fb1.json?email=#{params[:email]}",
+        res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/#{CM_LIST_ID}.json?email=#{params[:email]}",
             :headers => {
                 'Authorization'=>CM_AUTH
             },
@@ -126,7 +129,7 @@ class SessionsController < ApplicationController
             }.to_json)
         results.push(res.code)
         if params[:preferences].length > 0
-            res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/42d1a271424b7a6a8650c810575c3fb1.json?email=#{params[:email]}",
+            res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/#{CM_LIST_ID}.json?email=#{params[:email]}",
                 :headers => {
                     'Authorization'=>CM_AUTH
                 },
@@ -161,6 +164,50 @@ class SessionsController < ApplicationController
         }.to_json
     end
 
+    def send_comms_preference_email
+        @email = params[:email]
+        token = Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)
+        # 
+        #res = HTTParty.post("https://api.createsend.com/api/v3.3/transactional/classicEmail/send?clientID=#{CM_CLIENT_ID}",
+        #    :headers=>{
+        #        'Authorization'=>CM_AUTH
+        #    },
+        #    :body => {
+        #        'Subject' => 'Update your communication preferences',
+        #        'From'=>'ACL National Office <natoffice@acl.org.au>',
+        #       'ReplyTo'=>'natoffice@acl.org.au',
+        #       'To'=>[email],
+        #       'CC'=>nil,
+        #       'BCC'=>nil,
+        #        'Html'=>"<div style=\"text-align:center;\"><img src=\"https://www.acl.org.au/wp-content/uploads/2023/04/ACL_Logo_POS_RGB_final.png\" style=\"width:200px;\" /><p>Manage your email preferences for <b>#{email}</b> here:</p><a href=\"https://cors.acl.org.au/commspreferences?email=#{email}&token=#{token}\"><button style=\"background-color:#e75819;color:#fff;padding:20px;border-radius:4px;border:none;\">Manage preferences</button></a></div>",
+        #        'Text'=>'',
+        #        'Attachments'=>[],
+        #        'TrackOpens'=>false,
+        #        'TrackClicks'=>false,
+        #        'InlineCSS'=>true,
+        #        'ConsentToTrack'=>'Yes'
+        #    }.to_json)
+        @result = 202
+        if Rails.env == "production"
+            res = HTTParty.post("https://api.createsend.com/api/v3.2/transactional/smartemail/#{SMART_EMAIL_ID}/send",
+                :headers=>{
+                    'Authorization'=>CM_AUTH
+                },
+                :body=>{
+                    'To'=>[email],
+                    'CC'=>nil,
+                    'BCC'=>nil,
+                    'Attachments'=>[],
+                    'Data'=>{
+                        'manageLink'=>"https://cors.acl.org.au/commspreferences?email=#{@email}&token=#{token}"
+                    },
+                    'AddRecipientsToList'=>false,
+                    'ConsentToTrack'=>'Yes'
+                }.to_json)
+            @result = res.code
+        end
+    end
+
     def comms_preferences
         @email = params[:email]
         @token = params[:token]
@@ -176,7 +223,7 @@ class SessionsController < ApplicationController
             redirect_to "/404?reason=failedauth&email=#{@email}&token#{@token}&digest=#{Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)}"
             return nil
         end
-        res = HTTParty.get("https://api.createsend.com/api/v3.3/subscribers/42d1a271424b7a6a8650c810575c3fb1.json?email=#{@email}&includetrackingpreference=true",
+        res = HTTParty.get("https://api.createsend.com/api/v3.3/subscribers/#{CM_LIST_ID}.json?email=#{@email}&includetrackingpreference=true",
             :headers=>{
                 'Authorization'=>CM_AUTH,
                 'Accept'=>'*/*'
