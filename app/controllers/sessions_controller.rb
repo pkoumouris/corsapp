@@ -5,7 +5,7 @@ class SessionsController < ApplicationController
     CM_AUTH = Rails.env == "production" ? 'Basic '+ENV['CM_AUTH'] : ''
     CM_LIST_ID = Rails.env == "production" ? "819d4c49e69290315797754839ad14e1" : "42d1a271424b7a6a8650c810575c3fb1"
     CM_CLIENT_ID = Rails.env == "production" ? "ba2383a86df105accc1562e64b4316af" : "a9eef8b7cb9a43b3c35055c5510d0d12"
-    SMART_EMAIL_ID = Rails.env == "production" ? "7d18aa78-d22a-4ca9-9546-42c4bd6d095d" : "ccc7f472-9810-4102-a351-8f43e92e4e4b"
+    SMART_EMAIL_ID = Rails.env == "production" ? "8fb85bc4-6ded-4b1c-b7da-4b83d7d983d0" : "ccc7f472-9810-4102-a351-8f43e92e4e4b"
 
     def new
         if logged_in?
