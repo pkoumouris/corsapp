@@ -42,5 +42,6 @@ Rails.application.routes.draw do
   # Comms preferences
   get '/commspreferences', to: 'sessions#comms_preferences'
   get '/emailcommspreferences', to: 'sessions#send_comms_preference_email'
+  post '/emailcommspreferences', to: 'sessions#send_comms_preference_email_api'
   post '/commspreferences', to: 'sessions#update_comms_preferences_api'
 end

@@ -164,9 +164,36 @@ class SessionsController < ApplicationController
         }.to_json
     end
 
-    def send_comms_preference_email
+    def send_comms_preference_email_api
         @email = params[:email]
         token = Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)
+        @result = 202
+        if Rails.env == "production"
+            res = HTTParty.post("https://api.createsend.com/api/v3.2/transactional/smartemail/#{SMART_EMAIL_ID}/send",
+                :headers=>{
+                    'Authorization'=>CM_AUTH
+                },
+                :body=>{
+                    'To'=>[@email],
+                    'CC'=>nil,
+                    'BCC'=>nil,
+                    'Attachments'=>[],
+                    'Data'=>{
+                        'manageLink'=>"https://cors.acl.org.au/commspreferences?email=#{@email}&token=#{token}"
+                    },
+                    'AddRecipientsToList'=>false,
+                    'ConsentToTrack'=>'Yes'
+                }.to_json)
+            @result = res.code
+        end
+        render json: {
+            success: [200,201,202].include?(@result)
+        }.to_json
+    end
+
+    def send_comms_preference_email
+        @email = params[:email]
+        #token = Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)
         # 
         #res = HTTParty.post("https://api.createsend.com/api/v3.3/transactional/classicEmail/send?clientID=#{CM_CLIENT_ID}",
         #    :headers=>{
@@ -187,25 +214,25 @@ class SessionsController < ApplicationController
         #        'InlineCSS'=>true,
         #        'ConsentToTrack'=>'Yes'
         #    }.to_json)
-        @result = 202
-        if Rails.env == "production"
-            res = HTTParty.post("https://api.createsend.com/api/v3.2/transactional/smartemail/#{SMART_EMAIL_ID}/send",
-                :headers=>{
-                    'Authorization'=>CM_AUTH
-                },
-                :body=>{
-                    'To'=>[@email],
-                    'CC'=>nil,
-                    'BCC'=>nil,
-                    'Attachments'=>[],
-                    'Data'=>{
-                        'manageLink'=>"https://cors.acl.org.au/commspreferences?email=#{@email}&token=#{token}"
-                    },
-                    'AddRecipientsToList'=>false,
-                    'ConsentToTrack'=>'Yes'
-                }.to_json)
-            @result = res.code
-        end
+        #@result = 202
+        #if Rails.env == "production"
+        #    res = HTTParty.post("https://api.createsend.com/api/v3.2/transactional/smartemail/#{SMART_EMAIL_ID}/send",
+        #        :headers=>{
+        #            'Authorization'=>CM_AUTH
+        #        },
+        #        :body=>{
+        #0           'To'=>[@email],
+        #           'CC'=>nil,
+        #            'BCC'=>nil,
+        #            'Attachments'=>[],
+        #            'Data'=>{
+        #                'manageLink'=>"https://cors.acl.org.au/commspreferences?email=#{@email}&token=#{token}"
+        #            },
+        #            'AddRecipientsToList'=>false,
+        #            'ConsentToTrack'=>'Yes'
+        #        }.to_json)
+        #    @result = res.code
+        #end
     end
 
     def comms_preferences

@@ -14,29 +14,49 @@ body {
     font-family: 'FieldworkHum';
     text-align: center;
 }
+p {
+    font-size: 18px;
+}
 </style>
 </head>
+
+<script>
+function send_link(){
+    fetch("/emailcommspreferences",{
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'x-csrf-token': '<%= form_authenticity_token %>'
+        },
+        body: JSON.stringify({email: "<%= @email %>"})
+    }).then( (response) => {
+        if (response.ok){
+            return response.json();
+        }
+        throw new Error('Request fail');
+    }).then(json => {
+        if (json.success){
+            document.getElementById('tgt').innerHTML = '<p>A link has been sent to <%= @email %>.</p><p>If there are issues in using the link, you can contact natoffice@acl.org.au.</p>';
+        } else {
+            document.getElementById('tgt').innerHTML = '<p>An error was encountered. Please contact natoffice@acl.org.au.</p>';
+        }
+    });
+}
+</script>
+
 <body>
 <div>
     <img src="https://www.acl.org.au/wp-content/uploads/2023/04/ACL_Logo_POS_RGB_final.png" />
-    <% if [200,201,202].include?(@result) %>
-    <div>
+
+    <div id='tgt'>
         <h1>
-            Email successfully sent
+            Link to manage your preferences
         </h1>
-        <p>
-            We have sent you an email with a link to update the preferences for <%= @email %>.
-        </p>
+        <button class="btn" onclick="send_link()">
+            Get link
+        </button>
     </div>
-    <% else %>
-    <div>
-        <h1>
-            Error encountered
-        </h1>
-        <p>
-            Apologies, as there was an error with your request. Please contact natoffice@acl.org.au
-        </p>
-    </div>
-    <% end %>
+
 </div>
 </body>
