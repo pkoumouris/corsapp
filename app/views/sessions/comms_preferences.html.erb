@@ -123,11 +123,13 @@ h1 {
     {name:'Upcoming Training',selected:false},
     {name:'Opt Out on Incoming calls',selected:false}
 ];*/
-let prefs = {
-    /*'optout-giving':{
+/*
+'optout-giving':{
         name: 'Giving Opportunities',
         selected: false
-    },*/
+    },
+*/
+let prefs = {
     'optout-enews':{
         name: 'News Updates',
         selected: false
@@ -166,7 +168,7 @@ function a(){
     }
 }
 
-const all = ["optout-giving", "optout-enews", "optout-prayer", "optout-events", "optout-polcm", "optout-training"];
+const all = ["optout-enews", "optout-prayer", "optout-events", "optout-polcm", "optout-training"];//["optout-giving", "optout-enews", "optout-prayer", "optout-events", "optout-polcm", "optout-training"];
 
 function toggle(code){
     document.getElementById('save-button').innerHTML = "Save";
