@@ -93,53 +93,69 @@ class SessionsController < ApplicationController
     end
 
     def update_comms_preferences_api
-        if Digest::SHA256.hexdigest(params[:email]+':'+PREFERENCE_SECRET) != params[:token]
+        if Rails.env != "development" && Digest::SHA256.hexdigest(params[:email]+':'+PREFERENCE_SECRET) != params[:token]
             render json: {
                 success: false
             }.to_json, status: 400
             return nil
         end
         results = []
-        res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/#{CM_LIST_ID}.json?email=#{params[:email]}",
-            :headers => {
-                'Authorization'=>CM_AUTH
-            },
-            :body => {
-                'EmailAddress'=>params[:email],
-                'CustomFields'=>[{
-                    'Key'=>'Tags',
-                    'Value'=>'',
-                    'Clear'=>true
-                }],
-                'ConsentToTrack'=>'Yes'
-            }.to_json)
-        results.push(res.code)
-        res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/#{CM_LIST_ID}.json?email=#{params[:email]}",
-            :headers => {
-                'Authorization'=>CM_AUTH
-            },
-            :body => {
-                'EmailAddress'=>params[:email],
-                'CustomFields'=>[{
-                    'Key'=>'Tags',
-                    'Value'=>'',
-                    'Clear'=>true
-                }],
-                'ConsentToTrack'=>'Yes'
-            }.to_json)
-        results.push(res.code)
-        if params[:preferences].length > 0
-            res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/#{CM_LIST_ID}.json?email=#{params[:email]}",
-                :headers => {
-                    'Authorization'=>CM_AUTH
-                },
-                :body => {
-                    'EmailAddress'=>params[:email],
-                    'CustomFields'=>params[:preferences].map { |p| {'Key'=>'Tags','Value'=>p} },
-                    'ConsentToTrack'=>'Yes'
-                }.to_json)
-            results.push(res.code)
+        signup_id = General.get_signup_id_from_email(params[:email])
+        existing_tags = General.get_tags_from_person(signup_id)
+        new_tags = params[:preferences]
+        if new_tags.map { |t| ['7216','5635','5637','5636','5632','5633','5634'].include?(t) }.uniq != [true]
+            render json: {
+                success: false,
+                existing_tags: existing_tags,
+                new_tags: new_tags
+            }.to_json
+            return nil
         end
+        res1 = General.remove_tags_from_person(signup_id, existing_tags - new_tags)
+        res2 = General.add_tags_to_person(signup_id, new_tags - existing_tags)
+        render json: {
+            success: [res1,res2].flatten.map { |c| [200,201].include?(c) }.uniq == [true]
+        }.to_json
+        #res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/#{CM_LIST_ID}.json?email=#{params[:email]}",
+        #    :headers => {
+        #        'Authorization'=>CM_AUTH
+        #    },
+        #    :body => {
+        #        'EmailAddress'=>params[:email],
+        #        'CustomFields'=>[{
+        #            'Key'=>'Tags',
+        #            'Value'=>'',
+        #            'Clear'=>true
+        #        }],
+        #        'ConsentToTrack'=>'Yes'
+        #    }.to_json)
+        #results.push(res.code)
+        #res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/#{CM_LIST_ID}.json?email=#{params[:email]}",
+        #    :headers => {
+        #        'Authorization'=>CM_AUTH
+        #    },
+        #    :body => {
+        #        'EmailAddress'=>params[:email],
+        #        'CustomFields'=>[{
+        #            'Key'=>'Tags',
+        #            'Value'=>'',
+        #            'Clear'=>true
+        #        }],
+        #        'ConsentToTrack'=>'Yes'
+        #    }.to_json)
+        #results.push(res.code)
+        #if params[:preferences].length > 0
+        #    res = HTTParty.put("https://api.createsend.com/api/v3.3/subscribers/#{CM_LIST_ID}.json?email=#{params[:email]}",
+        #        :headers => {
+        #            'Authorization'=>CM_AUTH
+        #        },
+        #        :body => {
+        #            'EmailAddress'=>params[:email],
+        #            'CustomFields'=>params[:preferences].map { |p| {'Key'=>'Tags','Value'=>p} },
+        #            'ConsentToTrack'=>'Yes'
+        #        }.to_json)
+        #    results.push(res.code)
+        #end
         #res = HTTParty.post('https://aclportal.staging.wemapac.io/webservices/commspreferences/changePrefs',
         #    :headers => {
         #        'Content-Type'=>'application/json'
@@ -159,9 +175,9 @@ class SessionsController < ApplicationController
         #    success: res.code == 200 && res['Update Success'],
         #    res_code: res.code
         #}.to_json
-        render json: {
-            success: results.map { |r| r==200||r==201 }.uniq == [true]
-        }.to_json
+        #render json: {
+        #    success: results.map { |r| r==200||r==201 }.uniq == [true]
+        #}.to_json
     end
 
     def send_comms_preference_email_api
@@ -246,19 +262,92 @@ class SessionsController < ApplicationController
         #        'Email Lookup'=>@email,
         #        'Comms Token'=>@token
         #    }.to_json)
+        if Rails.env != "development" && Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET) != @token
+            redirect_to "/404?reason=failedauth&email=#{@email}&token#{@token}&digest=#{Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)}"
+            return nil
+        end
+        #res = HTTParty.get("https://api.createsend.com/api/v3.3/subscribers/#{CM_LIST_ID}.json?email=#{@email}&includetrackingpreference=true",
+        #    :headers=>{
+        #        'Authorization'=>CM_AUTH,
+        #        'Accept'=>'*/*'
+        #    })
+        #if res.code != 200
+        #    redirect_to '/500?reason=failed_auth'
+        #    return nil
+        #end
+        signup_id = General.get_signup_id_from_email(@email)
+        @tags = General.get_tags_from_person(signup_id)
+        #@preferences = res['CustomFields'].map { |c| c['Value'] }
+    end
+
+    ## UNSUBSCRIBE
+    def send_unsubscribe
+        @email = params[:email]
+        @token = params[:token]
         if Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET) != @token
             redirect_to "/404?reason=failedauth&email=#{@email}&token#{@token}&digest=#{Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)}"
             return nil
         end
-        res = HTTParty.get("https://api.createsend.com/api/v3.3/subscribers/#{CM_LIST_ID}.json?email=#{@email}&includetrackingpreference=true",
-            :headers=>{
-                'Authorization'=>CM_AUTH,
-                'Accept'=>'*/*'
-            })
-        if res.code != 200
-            redirect_to '/500?reason=failed_auth'
+        #@tags = General.get_tags_from_person(signup_id)
+    end
+
+    def send_unsubscribe_api
+        email = params[:email]
+        token = params[:token]
+        if Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET) != @token
+            redirect_to "/404?reason=failedauth&email=#{@email}&token#{@token}&digest=#{Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)}"
             return nil
         end
-        @preferences = res['CustomFields'].map { |c| c['Value'] }
+        #signup_id = General.get_signup_id_from_email(@email)
+        if Rails.env == "production"
+            res = HTTParty.post("https://api.createsend.com/api/v3.2/transactional/smartemail/#{SMART_EMAIL_ID}/send",
+                :headers=>{
+                    'Authorization'=>CM_AUTH
+                },
+                :body=>{
+                    'To'=>[@email],
+                    'CC'=>nil,
+                    'BCC'=>nil,
+                    'Attachments'=>[],
+                    'Data'=>{
+                        'manageLink'=>"https://cors.acl.org.au/unsubscribe?email=#{@email}&token=#{token}"
+                    },
+                    'AddRecipientsToList'=>false,
+                    'ConsentToTrack'=>'Yes'
+                }.to_json)
+            @result = res.code
+        end
+        render json: {
+            success: [200,201,202].include?(@result)
+        }.to_json
+    end
+
+    def unsubscribe
+        @email = params[:email]
+        @token = params[:token]
+        if Rails.env != "development" && Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET) != @token
+            redirect_to "/404?reason=failedauth&email=#{@email}&token#{@token}&digest=#{Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)}"
+            return nil
+        end
+        signup_id = General.get_signup_id_from_email(@email)
+        @unsubscribed = General.get_tags_from_person(signup_id).include?('7216')
+    end
+
+    def unsubscribe_api
+        @email = params[:email]
+        @token = params[:token]
+        if Rails.env != "development" && Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET) != @token
+            render json: {success: false}.to_json, status: 400
+            return nil
+        end
+        signup_id = General.get_signup_id_from_email(@email)
+        if params[:unsubscribe]
+            res = General.add_tags_to_person(signup_id, ['7216'])
+        else
+            res = General.remove_tags_from_person(signup_id, ['7216'])
+        end
+        render json: {
+            success: res.map { |r| [200,201].include?(r.code) }.uniq[0]
+        }.to_json
     end
 end

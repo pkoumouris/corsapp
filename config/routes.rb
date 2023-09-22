@@ -44,4 +44,9 @@ Rails.application.routes.draw do
   get '/emailcommspreferences', to: 'sessions#send_comms_preference_email'
   post '/emailcommspreferences', to: 'sessions#send_comms_preference_email_api'
   post '/commspreferences', to: 'sessions#update_comms_preferences_api'
+
+  get '/sendunsubscribe', to: 'sessions#send_unsubscribe'
+  post '/sendunsubscribe', to: 'sessions#send_unsubscribe_api'
+  get '/unsubscribe', to: 'sessions#unsubscribe'
+  post '/unsubscribe', to: 'sessions#unsubscribe_api'
 end

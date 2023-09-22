@@ -182,4 +182,69 @@ class General < ApplicationRecord
             return nil
         end
     end
+
+    ### NB for preferences
+    def General.test_token
+        return ''
+    end
+
+    def General.get_signup_id_from_email(email)
+        response = HTTParty.get("https://acl.nationbuilder.com/api/v2/signups?filter[with_email_address]=#{email}",
+            :headers => {
+                'Authorization' => 'Bearer '+General.test_token#access_token
+            })
+        return response.code == 200 ? response['data'][0]['id'] : nil
+    end
+
+    def General.get_tags_from_person(signup_id)
+        response = HTTParty.get("https://acl.nationbuilder.com/api/v2/signup_taggings?filter[signup_id]=#{signup_id}",
+            :headers => {
+                'Authorization' => 'Bearer '+General.test_token#access_token
+            })
+        return response.code == 200 ? response['data'].map { |d| d['attributes']['tag_id'] } : nil
+    end
+
+    def General.add_tags_to_person(signup_id, tag_ids)
+        responses = []
+        tag_ids.each do |tag_id|
+            responses.push(HTTParty.post("https://acl.nationbuilder.com/api/v2/signup_taggings",
+                :headers => {
+                    'Content-Type'=>'application/json',
+                    'Accept'=>'*/*',
+                    'Authorization' => 'Bearer '+General.test_token#access_token
+                },
+                :body => {
+                    'data'=>{
+                        'type'=>'signup_taggings',
+                        'attributes'=>{
+                            'signup_id'=>signup_id.to_s,
+                            'tag_id'=>tag_id
+                        }
+                    }
+                }.to_json))
+        end
+        return responses.map { |r| r.code }
+    end
+
+    def General.remove_tags_from_person(signup_id, tag_ids)
+        responses = []
+        tag_ids.each do |tag_id|
+            tagging_res = HTTParty.get("https://acl.nationbuilder.com/api/v2/signup_taggings?filter[tag_id]=#{tag_id}&filter[signup_id]=#{signup_id}",
+                :headers => {
+                    'Authorization' => 'Bearer '+General.test_token#access_token
+                })
+            if tagging_res.code == 200
+                puts tagging_res['data'][0]['id']
+                responses.push(HTTParty.delete("https://acl.nationbuilder.com/api/v2/signup_taggings/#{tagging_res['data'][0]['id']}",
+                    :headers => {
+                        'Content-Type'=>'application/json',
+                        'Accept'=>'*/*',
+                        'Authorization' => 'Bearer '+General.test_token#access_token
+                    }))
+            else
+                responses.push(400)
+            end
+        end
+        return responses.map { |r| r.code }
+    end
 end

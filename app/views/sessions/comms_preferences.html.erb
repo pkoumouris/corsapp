@@ -216,7 +216,11 @@ function toggle_all(){
         }
         toggle_all_status = false;
     }
+    console.log(prefs);
 }
+
+const id2tag = {'7216':'optout','5635':'optout-enews','5637':'optout-events','5632':'optout-polcm','5633':'optout-prayer','5634':'optout-training'};
+const tag2id = {'optout':'7216','optout-enews':'5635','optout-events':'5637','optout-polcm':'5632','optout-prayer':'5633','optout-training':'5634'};
 
 function update_preferences(){
     // commspreferences
@@ -225,7 +229,7 @@ function update_preferences(){
     //prefs.forEach((v,j) => v.selected ? res.push(v) : false);
     all.forEach((v, j) => !prefs[v].selected ? res.push(v) : false);
     console.log("res");
-    console.log(res);
+    console.log(res.map((k,i) => tag2id[k]).filter(x => x != undefined));
     //return false;
     fetch("/commspreferences",{
         method: 'POST',
@@ -238,7 +242,7 @@ function update_preferences(){
         body: JSON.stringify({
             email: "<%= @email %>",
             token: "<%= @token %>",
-            preferences: res
+            preferences: res.map((k,i) => tag2id[k]).filter(x => x != undefined)
         })
     }).then( (response) => {
         if (response.ok){
@@ -247,6 +251,7 @@ function update_preferences(){
         document.getElementById('refund-secondary-message').innerHTML = "Error encountered. Please keep this page and speak to your system administrator.";
         throw new Error('Request fail');
     }).then(json => {
+        console.log(json);
         if (json.success){
             document.getElementById('save-button').innerHTML = "Saved";
         } else {
@@ -273,7 +278,7 @@ for (i = 0 ; i < prefs.length ; i++){
         toggle(i);
     }
 }*/
-let avant = <%= raw @preferences %>;
+let avant = <%= raw @tags %>.map((k,i) => id2tag[k]).filter(x => x != undefined);
 console.log("avant");
 console.log(avant);
 

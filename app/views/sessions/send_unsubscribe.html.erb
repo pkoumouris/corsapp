@@ -1,0 +1,62 @@
+<head>
+<style>
+@font-face {
+  font-family: "FieldworkHum";
+  font-weight: 600;
+  src: url("/Fieldwork-Hum-Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: "FieldworkHum";
+  font-weight: 400;
+  src: url("/Fieldwork-Hum-Regular.ttf") format("truetype");
+}
+body {
+    font-family: 'FieldworkHum';
+    text-align: center;
+}
+p {
+    font-size: 18px;
+}
+</style>
+</head>
+
+<script>
+function send_link(){
+    fetch("/sendunsubscribe",{
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'x-csrf-token': '<%= form_authenticity_token %>'
+        },
+        body: JSON.stringify({email: "<%= @email %>"})
+    }).then( (response) => {
+        if (response.ok){
+            return response.json();
+        }
+        throw new Error('Request fail');
+    }).then(json => {
+        if (json.success){
+            document.getElementById('tgt').innerHTML = '<p>Link sent to <%= @email %></p>';
+        } else {
+            document.getElementById('tgt').innerHTML = '<p>An error was encountered. Please email natoffice@acl.org.au</p>';
+        }
+    });
+}
+</script>
+
+<body>
+<div>
+    <img src="https://www.acl.org.au/wp-content/uploads/2023/04/ACL_Logo_POS_RGB_final.png" />
+
+    <div id='tgt'>
+        <h1>
+            Email link to unsubscribe
+        </h1>
+        <button class="btn" onclick="send_link()">
+            Get link
+        </button>
+    </div>
+
+</div>
+</body>

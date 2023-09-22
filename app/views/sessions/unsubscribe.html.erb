@@ -1,0 +1,142 @@
+<head>
+<style>
+@font-face {
+  font-family: "FieldworkHum";
+  font-weight: 600;
+  src: url("/Fieldwork-Hum-Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: "FieldworkHum";
+  font-weight: 400;
+  src: url("/Fieldwork-Hum-Regular.ttf") format("truetype");
+}
+
+#main-container {
+    text-align: center;
+    font-family: "FieldworkHum";
+    font-weight: 400;
+}
+
+#main-container table {
+    margin: auto;
+}
+
+body {
+    font-size: 18px;
+}
+
+h1 {
+    font-family: "FieldworkHum";
+    font-weight: 600;
+    color: #e75819;
+}
+
+/*.toggle-container {
+    transition-properties: background-color, padding-left;
+}*/
+.toggle-container {
+    width: 40px;
+    height: 16px;
+    background-color: #c9c9c9;
+    border-radius: 13px;
+    padding: 4px;
+    cursor: pointer;
+    transition-properties: background-color, padding-left;
+    transition-duration: 0.3s;
+}
+/*.toggle-container-on {
+    width: 16px;
+    height: 16px;
+    background-color: green;
+    border-radius: 13px;
+    padding: 4px;
+    padding-left:28px;
+    cursor: pointer;
+}*/
+
+.toggle-ball {
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+#prefs-container tr td:nth-child(1) {
+    width: 80px;
+    padding: 10px;
+}
+
+#prefs-container tr td:nth-child(2) {
+    width: 260px;
+    text-align: left;
+    padding: 10px;
+    font-size: 22px;
+}
+
+.general-button {
+    background-color: #e75819;
+    font-family: "FieldworkHum";
+    font-weight: 400;
+    min-width: 100px;
+    color: #fff;
+    padding: 10px;
+    font-size: 18px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#save-button-container {
+    margin-top: 20px;
+}
+
+</style>
+</head>
+
+<div id="main-container">
+    <h1>
+        Subscribe or unsubscribe
+    </h1>
+    <div id="msg-tgt">
+    </div>
+    <p>
+        <b><%= @email %></b>
+    </p>
+    <div id="save-button-container">
+        <button id="save-button" class="general-button" onclick="update_preferences()">
+            <%= @unsubscribed ? "Subscribe" : "Unsubscribe" %>
+        </button>
+    </div>
+</div>
+
+<script>
+function update_preferences(){
+    fetch("/unsubscribe",{
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'x-csrf-token': '<%= form_authenticity_token %>'
+        },
+        body: JSON.stringify({
+            unsubscribe: <%= (!@unsubscribed).to_s %>,
+            email: "<%= @email %>",
+            token: "<%= @token %>"
+        })
+    }).then( (response) => {
+        if (response.ok){
+            return response.json();
+        }
+        document.getElementById('msg-tgt').innerHTML = "Error encountered. Please keep this page and speak to your system administrator.";
+        throw new Error('Request fail');
+    }).then(json => {
+        if (json.success){
+            document.getElementById('msg-tgt').innerHTML = "Successfully <%= @unsubscribed ? 'subscribed' : 'unsubscribed' %>.";
+        } else {
+            document.getElementById('msg-tgt').innerHTML = "There was an error.";
+        }
+    });
+}
+</script>
