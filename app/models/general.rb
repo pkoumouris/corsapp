@@ -191,7 +191,7 @@ class General < ApplicationRecord
     def General.get_signup_id_from_email(email)
         response = HTTParty.get("https://acl.nationbuilder.com/api/v2/signups?filter[with_email_address]=#{email}",
             :headers => {
-                'Authorization' => 'Bearer '+General.test_token#access_token
+                'Authorization' => 'Bearer '+(Rails.env=="production" ? General.access_token : General.test_token)
             })
         return response.code == 200 ? response['data'][0]['id'] : nil
     end
@@ -199,7 +199,7 @@ class General < ApplicationRecord
     def General.get_tags_from_person(signup_id)
         response = HTTParty.get("https://acl.nationbuilder.com/api/v2/signup_taggings?filter[signup_id]=#{signup_id}",
             :headers => {
-                'Authorization' => 'Bearer '+General.test_token#access_token
+                'Authorization' => 'Bearer '+(Rails.env=="production" ? General.access_token : General.test_token)
             })
         return response.code == 200 ? response['data'].map { |d| d['attributes']['tag_id'] } : nil
     end
@@ -211,7 +211,7 @@ class General < ApplicationRecord
                 :headers => {
                     'Content-Type'=>'application/json',
                     'Accept'=>'*/*',
-                    'Authorization' => 'Bearer '+General.test_token#access_token
+                    'Authorization' => 'Bearer '+(Rails.env=="production" ? General.access_token : General.test_token)
                 },
                 :body => {
                     'data'=>{
@@ -231,7 +231,7 @@ class General < ApplicationRecord
         tag_ids.each do |tag_id|
             tagging_res = HTTParty.get("https://acl.nationbuilder.com/api/v2/signup_taggings?filter[tag_id]=#{tag_id}&filter[signup_id]=#{signup_id}",
                 :headers => {
-                    'Authorization' => 'Bearer '+General.test_token#access_token
+                    'Authorization' => 'Bearer '+(Rails.env=="production" ? General.access_token : General.test_token)
                 })
             if tagging_res.code == 200
                 puts tagging_res['data'][0]['id']
@@ -239,7 +239,7 @@ class General < ApplicationRecord
                     :headers => {
                         'Content-Type'=>'application/json',
                         'Accept'=>'*/*',
-                        'Authorization' => 'Bearer '+General.test_token#access_token
+                        'Authorization' => 'Bearer '+(Rails.env=="production" ? General.access_token : General.test_token)
                     }))
             else
                 responses.push(400)
