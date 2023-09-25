@@ -248,7 +248,7 @@ function update_preferences(){
         if (response.ok){
             return response.json();
         }
-        document.getElementById('refund-secondary-message').innerHTML = "Error encountered. Please keep this page and speak to your system administrator.";
+        document.getElementById('refund-secondary-message').innerHTML = "Error encountered. Please keep this page and email natoffice@acl.org.au";
         throw new Error('Request fail');
     }).then(json => {
         console.log(json);

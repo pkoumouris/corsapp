@@ -348,7 +348,7 @@ class SessionsController < ApplicationController
             res = General.remove_tags_from_person(signup_id, ['7216'])
         end
         render json: {
-            success: res.map { |r| [200,201].include?(r.code) }.uniq[0]
+            success: res.map { |r| [200,201].include?(r) }.uniq[0]
         }.to_json
     end
 end
