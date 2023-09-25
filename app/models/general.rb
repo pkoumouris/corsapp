@@ -185,7 +185,7 @@ class General < ApplicationRecord
 
     ### NB for preferences
     def General.test_token
-        return 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImFsZyI6IkhTNTEyIiwia2lkIjoiNlZaTlh6cjY3c1BJYzhKeWtNaXBndXk3YlA3YnZpRWJFeWU1QndFcjVZYyJ9.eyJpc3MiOiJuYnVpbGQiLCJpYXQiOjE2OTU2MTc0MDIsImp0aSI6ImJjNWIzNTQ3LTIzY2QtNDRhMC1iNTIyLWQzMThhM2U2NmU1ZiIsInBybiI6IjY0ODc2MHxhY2wiLCJ1c2VyIjp7ImlkIjo2NDg3NjAsImVtYWlsIjoicGFycmlzLmtvdW1vdXJpc0BnbWFpbC5jb20ifSwibmF0aW9uIjp7ImlkIjoiNTY5NWQ0ZWVkNTM1Y2Y2NTA1MDAwMDA0Iiwic2x1ZyI6ImFjbCJ9fQ.xcJpS-95mzgVrlLOatk9D8YhbC7jaHEfZNbnHV_By3dxIdMHm36E6bPBXAJF96e7c3W6mytPHLleS9dH3WTFGg'
+        return ''
     end
 
     def General.get_signup_id_from_email(email)

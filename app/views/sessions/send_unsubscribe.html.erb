@@ -17,11 +17,28 @@ body {
 p {
     font-size: 18px;
 }
+#email-input {
+    padding: 12px;
+    font-size: 16px;
+    font-family: "FieldworkHum";
+    text-align: center;
+    border: solid;
+    border-width: 1px;
+    border-color: grey;
+    border-radius: 4px;
+    width: 320px;
+}
 </style>
 </head>
 
 <script>
+let email = "<%= @email %>";
+
 function send_link(){
+    if (email === null || email === undefined || !email.includes('@')){
+        email = document.getElementById('email-input').value;
+    }
+    console.log("Sending link for "+email);
     fetch("/sendunsubscribe",{
         method: 'POST',
         headers: {
@@ -29,7 +46,7 @@ function send_link(){
             'Content-Type': 'application/json',
             'x-csrf-token': '<%= form_authenticity_token %>'
         },
-        body: JSON.stringify({email: "<%= @email %>"})
+        body: JSON.stringify({email: email})
     }).then( (response) => {
         if (response.ok){
             return response.json();
@@ -38,7 +55,7 @@ function send_link(){
     }).then(json => {
         console.log(json);
         if (json.success){
-            document.getElementById('tgt').innerHTML = '<p>Link sent to <%= @email %></p>';
+            document.getElementById('tgt').innerHTML = '<p>Link sent to '+email+'</p>';
         } else {
             document.getElementById('tgt').innerHTML = '<p>An error was encountered. Please email natoffice@acl.org.au</p>';
         }
@@ -54,6 +71,9 @@ function send_link(){
         <h1>
             Email link to unsubscribe
         </h1>
+        <% if @email.nil? || !@email.include?('@') %>
+        <input type="text" id="email-input" placeholder="Enter your email to unsubscribe" /><br />
+        <% end %>
         <button class="btn" onclick="send_link()">
             Get link
         </button>
