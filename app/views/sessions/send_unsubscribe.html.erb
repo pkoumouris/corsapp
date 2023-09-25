@@ -36,6 +36,7 @@ function send_link(){
         }
         throw new Error('Request fail');
     }).then(json => {
+        console.log(json);
         if (json.success){
             document.getElementById('tgt').innerHTML = '<p>Link sent to <%= @email %></p>';
         } else {

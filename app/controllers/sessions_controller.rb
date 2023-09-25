@@ -283,22 +283,23 @@ class SessionsController < ApplicationController
     ## UNSUBSCRIBE
     def send_unsubscribe
         @email = params[:email]
-        @token = params[:token]
-        if Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET) != @token
-            redirect_to "/404?reason=failedauth&email=#{@email}&token#{@token}&digest=#{Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)}"
-            return nil
-        end
+        #@token = params[:token]
+        #if Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET) != @token
+        #    redirect_to "/404?reason=failedauth&email=#{@email}&token#{@token}&digest=#{Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)}"
+        #    return nil
+        #end
         #@tags = General.get_tags_from_person(signup_id)
     end
 
     def send_unsubscribe_api
-        email = params[:email]
-        token = params[:token]
-        if Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET) != @token
-            redirect_to "/404?reason=failedauth&email=#{@email}&token#{@token}&digest=#{Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)}"
-            return nil
-        end
+        @email = params[:email].to_s
+        #@token = params[:token].to_s
+        #if Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET) != @token
+        #    redirect_to "/404?reason=failedauth&email=#{@email}&token#{@token}&digest=#{Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)}"
+        #    return nil
+        #end
         #signup_id = General.get_signup_id_from_email(@email)
+        token = Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)
         if Rails.env == "production"
             res = HTTParty.post("https://api.createsend.com/api/v3.2/transactional/smartemail/#{SMART_EMAIL_ID}/send",
                 :headers=>{
