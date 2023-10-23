@@ -330,8 +330,10 @@ class SessionsController < ApplicationController
             redirect_to "/404?reason=failedauth&email=#{@email}&token#{@token}&digest=#{Digest::SHA256.hexdigest(@email.downcase+':'+PREFERENCE_SECRET)}"
             return nil
         end
-        signup_id = General.get_signup_id_from_email(@email)
-        @unsubscribed = General.get_tags_from_person(signup_id).include?('7216')
+        if !@email.nil?
+            signup_id = General.get_signup_id_from_email(@email)
+            @unsubscribed = General.get_tags_from_person(signup_id).include?('7216')
+        end
     end
 
     def unsubscribe_api
@@ -344,8 +346,10 @@ class SessionsController < ApplicationController
         signup_id = General.get_signup_id_from_email(@email)
         if params[:unsubscribe]
             res = General.add_tags_to_person(signup_id, ['7216'])
+            res.push(General.change_email_opt_in(signup_id, false))
         else
             res = General.remove_tags_from_person(signup_id, ['7216'])
+            res.push(General.change_email_opt_in(signup_id, true))
         end
         render json: {
             success: res.map { |r| [200,201].include?(r) }.uniq[0]

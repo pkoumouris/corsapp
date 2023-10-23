@@ -185,7 +185,7 @@ class General < ApplicationRecord
 
     ### NB for preferences
     def General.test_token
-        return ''
+        return 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImFsZyI6IkhTNTEyIiwia2lkIjoiNlZaTlh6cjY3c1BJYzhKeWtNaXBndXk3YlA3YnZpRWJFeWU1QndFcjVZYyJ9.eyJpc3MiOiJuYnVpbGQiLCJpYXQiOjE2OTgwMzMwMDIsImp0aSI6IjFkOTcwM2U0LWNhNzgtNDdiNi1hYzUwLWE5Y2EyY2VjMDYyYiIsInBybiI6IjY0ODc2MHxhY2wiLCJ1c2VyIjp7ImlkIjo2NDg3NjAsImVtYWlsIjoicGFycmlzLmtvdW1vdXJpc0BnbWFpbC5jb20ifSwibmF0aW9uIjp7ImlkIjoiNTY5NWQ0ZWVkNTM1Y2Y2NTA1MDAwMDA0Iiwic2x1ZyI6ImFjbCJ9fQ.tPVpzYSsFN7rF6-4mlimZm-LMioWDKXuslPOQJkobb8bvAnA1ZYHdtI9hUbKIcAFTV0uZYejxAHE-xcuHFUg-w'
     end
 
     def General.get_signup_id_from_email(email)
@@ -246,5 +246,24 @@ class General < ApplicationRecord
             end
         end
         return responses.map { |r| r.code }
+    end
+
+    def General.change_email_opt_in(signup_id, opt_in) # opt_in is boolean
+        res = HTTParty.patch("https://acl.nationbuilder.com/api/v2/signups/#{signup_id}",
+            :headers => {
+                'Content-Type'=>'application/json',
+                'Accept'=>'*/*',
+                'Authorization' => 'Bearer '+(Rails.env=="production" ? General.access_token : General.test_token)
+            },
+            :body => {
+                'data' => {
+                    'id'=>signup_id,
+                    'type'=>'signups',
+                    'attributes'=>{
+                        'email_opt_in'=>false
+                    }
+                }
+            }.to_json)
+        return res.code
     end
 end
