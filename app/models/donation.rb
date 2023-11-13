@@ -82,6 +82,31 @@ class Donation < ApplicationRecord
         Donation.where(email: email, tracking_code: tracking_code, created_at: time_start..Time.now).map { |d| d.amount_in_cents }.sum
     end
 
+    ########################### WEM ##########################
+    def create_in_wem
+        response = HTTParty.post("https://preview.wem.io/38864/webservices/securepay/recordPayment",
+            :headers => {"Content-Type" => "application/json"},
+            :body => {
+                'Donation Amount'=>self.amount_in_cents,
+                'Donation Tracking Code'=>self.tracking_code_slug,
+                'Email Address'=>self.email,
+                'Donor First Name'=>self.first_name,
+                'Donor Last Name'=>self.last_name,
+                'Donor Address'=>self.address,
+                'Donor GNAF ID'=>self.gnaf_address_identifier,
+                'SP Response Code'=>self.gateway_response_code,
+                'SP Order ID'=>self.order_spid,
+                'SP Bank Transaction ID'=>self.bank_transaction_spid,
+                'Donation Server Token'=>'abc123',
+                'Donor Mobile Phone'=>self.phone_number,
+                'Recurring Transaction'=>self.is_recurring,
+                'SP Recurring ID'=>self.recurring.nil? ? nil : self.recurring.schedule_spid,
+                'Donation Designation'=>'General Giving',
+                'Page Slug'=>self.page_slug
+        }.to_json)
+        return response
+    end
+
     ###################### NationBuilder #####################
     def Donation.gnaf_to_billing_address(gnaf_id) ## Test this!
         response = HTTParty.get("https://api.psma.com.au/v2/addresses/address/#{gnaf_id}",
