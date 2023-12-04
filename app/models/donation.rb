@@ -11,6 +11,10 @@ class Donation < ApplicationRecord
     RECURRING_SLUG = "ov_w_monthly_sp"
     RECURRING_ID = "3564"
     RECURRING_TAG_ID = "2556"
+
+    #WEM_DONATION_URL = Rails.env.production? ? "https://aclportal.live.wemapac.io/webservices/securepay/recordPayment" : "https://aclportal.staging.wemapac.io/webservices/securepay/recordPayment"
+    WEM_DONATION_URL = "https://aclportal.staging.wemapac.io/webservices/securepay/recordPayment"
+    WEM_DONATION_TOKEN = Rails.env.production? ? ENV['WEM_DONATION_TOKEN'] : xcrypt.decrypt_and_verify('dVtlxJuuVfXjwJODrdhU6pv5Rvth71FNO30PYLsIf+bC9kJ/4issjJvh--yJBG4mmU5xtaWidl--z9xjASJbJ1L1KAp5jLGdhg==')
     
     def Donation.get_auth_page_url
         #site_path = 'https://acl.nationbuilder.com'
@@ -84,7 +88,9 @@ class Donation < ApplicationRecord
 
     ########################### WEM ##########################
     def create_in_wem
-        response = HTTParty.post("https://preview.wem.io/38864/webservices/securepay/recordPayment",
+        puts WEM_DONATION_TOKEN
+        puts WEM_DONATION_URL
+        response = HTTParty.post(WEM_DONATION_URL,
             :headers => {"Content-Type" => "application/json"},
             :body => {
                 'Donation Amount'=>self.amount_in_cents,
@@ -97,7 +103,7 @@ class Donation < ApplicationRecord
                 'SP Response Code'=>self.gateway_response_code,
                 'SP Order ID'=>self.order_spid,
                 'SP Bank Transaction ID'=>self.bank_transaction_spid,
-                'Donation Server Token'=>'abc123',
+                'Donation Server Token'=>WEM_DONATION_TOKEN,
                 'Donor Mobile Phone'=>self.phone_number,
                 'Recurring Transaction'=>self.is_recurring,
                 'SP Recurring ID'=>self.recurring.nil? ? nil : self.recurring.schedule_spid,

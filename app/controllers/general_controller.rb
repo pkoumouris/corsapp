@@ -117,6 +117,16 @@ class GeneralController < ApplicationController
             }.to_json, status: 201
             return nil
         end
+        # 3b. Make calls to WEM
+        wem_resp = donation.create_in_wem
+        if wem_resp.code == 200 && !!wem_resp['Record Payment Success']
+            donation.imported_to_nb = true
+            donation.imported_to_nb_at = Time.now
+        else
+            donation.imported_to_nb = false
+            donation.other_data = "Could not create in WEM."
+        end
+        donation.save
         # 4. Return success
         if params[:recurring]
             render json: {
