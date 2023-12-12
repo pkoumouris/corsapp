@@ -12,7 +12,7 @@ class Donation < ApplicationRecord
     RECURRING_ID = "3564"
     RECURRING_TAG_ID = "2556"
 
-    WEM_DONATION_URL = Rails.env.production? && false ? "https://aclportal.live.wemapac.io/webservices/securepay/recordPayment" : "https://aclportal.staging.wemapac.io/webservices/securepay/recordPayment"
+    WEM_DONATION_URL = Rails.env.production? ? "https://aclportal.live.wemapac.io/webservices/securepay/recordPayment" : "https://aclportal.staging.wemapac.io/webservices/securepay/recordPayment"
     #WEM_DONATION_URL = "https://preview.wem.io/38864/webservices/securepay/recordPayment"#"https://aclportal.staging.wemapac.io/webservices/securepay/recordPayment"
     WEM_DONATION_TOKEN = Rails.env.production? ? ENV['WEM_DONATION_TOKEN'] : xcrypt.decrypt_and_verify('dVtlxJuuVfXjwJODrdhU6pv5Rvth71FNO30PYLsIf+bC9kJ/4issjJvh--yJBG4mmU5xtaWidl--z9xjASJbJ1L1KAp5jLGdhg==')
     
