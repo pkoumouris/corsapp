@@ -159,7 +159,8 @@ class General < ApplicationRecord
         if response.code == 200# && !response['features'].nil? && response['features'].length > 0 && !response['features'][0]['properties'].nil? && !response['features'][0]['properties']['commonwealthElectorate'].nil?
             return response['features'].map { |r| {
                 'formattedAddress': r['properties']['formattedAddress'],
-                'commonwealthElectorate': r['properties']['commonwealthElectorate']['commElectoralName']
+                'commonwealthElectorate': r['properties']['commonwealthElectorate']['commElectoralName'],
+                'stateElectorate': r['properties']['stateElectorate']['stateElectoralName']
             } }
         else
             return nil
