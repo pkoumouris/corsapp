@@ -1,5 +1,5 @@
 class SessionsController < ApplicationController
-    skip_before_action :verify_authenticity_token, only: [:refresh_access_token, :get_access_token]
+    skip_before_action :verify_authenticity_token, only: [:refresh_access_token, :get_access_token, :zoom_registration_webhook]
 
     PREFERENCE_SECRET = Rails.env == "production" ? ENV['PREFERENCE_SECRET'] : '8QKI4a57dDvKoM2v'
     CM_AUTH = Rails.env == "production" ? 'Basic '+ENV['CM_AUTH'] : ''
@@ -354,5 +354,10 @@ class SessionsController < ApplicationController
         render json: {
             success: res.map { |r| [200,201].include?(r) }.uniq[0]
         }.to_json
+    end
+
+
+    def zoom_registration_webhook
+        render json: {}.to_json
     end
 end

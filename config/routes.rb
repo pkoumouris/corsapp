@@ -49,4 +49,7 @@ Rails.application.routes.draw do
   post '/sendunsubscribe', to: 'sessions#send_unsubscribe_api'
   get '/unsubscribe', to: 'sessions#unsubscribe'
   post '/unsubscribe', to: 'sessions#unsubscribe_api'
+
+  # Zoom webhook registration
+  post '/zoomregistration', to: 'sessions#zoom_registration_webhook'
 end
