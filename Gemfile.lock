@@ -72,6 +72,7 @@ GEM
       sshkit (>= 1.6.1, != 1.7.0)
     base64 (0.2.0)
     bcrypt (3.1.20)
+    bcrypt_pbkdf (1.1.1)
     bcrypt_pbkdf (1.1.1-x64-mingw-ucrt)
     bigdecimal (3.1.8)
     bindex (0.8.1)
@@ -179,6 +180,8 @@ GEM
     nio4r (2.7.3)
     nokogiri (1.16.6-x64-mingw-ucrt)
       racc (~> 1.4)
+    nokogiri (1.16.6-x86_64-linux)
+      racc (~> 1.4)
     oauth2 (2.0.9)
       faraday (>= 0.17.3, < 3.0)
       jwt (>= 1.0, < 3.0)
@@ -250,6 +253,7 @@ GEM
       activesupport (>= 6.1)
       sprockets (>= 3.0.0)
     sqlite3 (1.7.3-x64-mingw-ucrt)
+    sqlite3 (1.7.3-x86_64-linux)
     sshkit (1.22.2)
       base64
       mutex_m
@@ -295,6 +299,7 @@ GEM
 
 PLATFORMS
   x64-mingw-ucrt
+  x86_64-linux
 
 DEPENDENCIES
   bcrypt (~> 3.1.7)
