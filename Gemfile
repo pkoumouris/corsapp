@@ -80,7 +80,7 @@ group :development do
   # gem "spring"
   # Use sqlite3 as the database for Active Record
   gem 'sqlite3', '~> 1.4'
-  gem 'capistrano', '~> 3.11'
+  gem 'capistrano', '~> 3.18.1'#'~> 3.11'
   gem 'capistrano-rails', '~> 1.4'
   gem 'capistrano-passenger', '~> 0.2.0'
   gem 'capistrano-rbenv', '~> 2.1', '>= 2.1.4'
