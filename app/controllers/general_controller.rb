@@ -118,7 +118,7 @@ class GeneralController < ApplicationController
             return nil
         end
         # 3b. Make calls to WEM
-        wem_resp = donation.create_in_wem
+        wem_resp = donation.create_in_wem(params[:send_email_updates])
         if wem_resp.code == 200 && !!wem_resp['Record Payment Success']
             donation.imported_to_nb = true
             donation.imported_to_nb_at = Time.now

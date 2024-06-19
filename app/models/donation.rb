@@ -87,7 +87,7 @@ class Donation < ApplicationRecord
     end
 
     ########################### WEM ##########################
-    def create_in_wem
+    def create_in_wem(send_email_updates)
         puts WEM_DONATION_TOKEN
         puts WEM_DONATION_URL
         response = HTTParty.post(WEM_DONATION_URL,
@@ -108,7 +108,8 @@ class Donation < ApplicationRecord
                 'Recurring Transaction'=>self.is_recurring,
                 'SP Recurring ID'=>self.recurring.nil? ? nil : self.recurring.schedule_spid,
                 'Donation Designation'=>'General Giving',
-                'Page Slug'=>self.page_slug
+                'Page Slug'=>self.page_slug,
+                'Include Email Updates'=>!!send_email_updates
         }.to_json)
         return response
     end
