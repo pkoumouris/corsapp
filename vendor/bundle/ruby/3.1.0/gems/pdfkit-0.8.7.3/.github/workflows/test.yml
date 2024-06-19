@@ -1,0 +1,71 @@
+name: Test workflow
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        ruby:
+          - '2.5'
+          - '2.6'
+          - '2.7'
+          - '3.0'
+          - '3.1'
+        rails:
+          - '~> 4.1'
+          - '~> 5.2'
+          - '~> 6.0.0'
+          - '~> 6.1'
+          - '~> 7.0.0'
+        exclude:
+          - ruby: '2.5'
+            rails: '~> 7.0.0'
+          - ruby: '2.6'
+            rails: '~> 7.0.0'
+          - ruby: '2.7'
+            rails: '~> 4.1'
+          - ruby: '3.0'
+            rails: '~> 4.1'
+          - ruby: '3.0'
+            rails: '~> 5.2'
+          - ruby: '3.1'
+            rails: '~> 4.1'
+          - ruby: '3.1'
+            rails: '~> 5.2'
+          - ruby: '3.1'
+            rails: '~> 6.0.0'
+    runs-on: ${{ matrix.os }}
+    env:
+      RAILS_VERSION: ${{ matrix.rails }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      # rubygems-update's latest is no longer compatible with ruby 2.5, so conditionally run ruby-setup setting the
+      # rubygem version the most recent valid version for 2.5:
+      # https://rubygems.org/gems/rubygems-update/versions/3.3.26
+      if: ${{ matrix.ruby == '2.5' }}
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        rubygems: 3.3.26
+        bundler: latest
+        bundler-cache: true
+    - uses: ruby/setup-ruby@v1
+      # otherwise, we can use rubygems latest
+      if: ${{ matrix.ruby != '2.5' }}
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        rubygems: latest
+        bundler: latest
+        bundler-cache: true
+
+    - name: Setup wkhtmltopdf
+      run: |
+        sudo apt-get install -y xfonts-base xfonts-75dpi
+        wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.bionic_amd64.deb
+        sudo dpkg -i wkhtmltox_0.12.6-1.bionic_amd64.deb
+
+    - name: Run tests
+      run: bundle exec rake

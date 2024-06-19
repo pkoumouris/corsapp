@@ -1,5 +1,5 @@
 # config valid for current version and patch releases of Capistrano
-lock "~> 3.17.2"
+lock '3.18.1'
 
 set :application, "corsapp"
 set :repo_url, "git@github.com:pkoumouris/corsapp.git"
