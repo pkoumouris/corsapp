@@ -578,7 +578,8 @@ class Donation < ApplicationRecord
             '96'=>'System malfunction',
             '97'=>'Advises that reconciliation totals have been reset',
             '98'=>'MAC error',
-            '99'=>'Reserved for national use'
+            '99'=>'Reserved for national use',
+            '159' => 'Card error, unable to process at this time'
         }[response_code]
     end
 
