@@ -95,19 +95,19 @@ class GeneralController < ApplicationController
         wem_failure = false # will change as time goes on
         nb_failure = false # will change as time goes on
         # 3a. Make the calls to NB
-        if false && (donation.gnaf_address_identifier.nil? || donation.gnaf_address_identifier.length < 3 || donation.gnaf_address_identifier[0..1] == "MA")
-            nb_resp = donation.create_in_nationbuilder
-        else
-            nb_resp = donation.create_in_nationbuilder_with_address
-            if nb_resp.code != 201
-                nb_resp = donation.create_in_nationbuilder
-            end
-        end
+        #if false && (donation.gnaf_address_identifier.nil? || donation.gnaf_address_identifier.length < 3 || donation.gnaf_address_identifier[0..1] == "MA")
+        #    nb_resp = donation.create_in_nationbuilder
+        #else
+        #    nb_resp = donation.create_in_nationbuilder_with_address
+        #    if nb_resp.code != 201
+        #        nb_resp = donation.create_in_nationbuilder
+        #    end
+        #end
         #puts nb_resp
-        nb_failure = (nb_resp.code != 201)
-        if !nb_failure
-            donation.update_attribute(:nbid, nb_resp['data']['id'])
-        end
+        nb_failure = false #(nb_resp.code != 201)
+        #if !nb_failure
+        #    donation.update_attribute(:nbid, nb_resp['data']['id'])
+        #end
         if save_failure || wem_failure || nb_failure
             render json: {
                 success: true,
@@ -120,7 +120,7 @@ class GeneralController < ApplicationController
         # 3b. Make calls to WEM
         wem_resp = donation.create_in_wem(params[:send_email_updates])
         if wem_resp.code == 200 && !!wem_resp['Record Payment Success']
-            donation.imported_to_nb = true
+            donation.imported_to_nb = false #true
             donation.imported_to_nb_at = Time.now
         else
             donation.imported_to_nb = false
