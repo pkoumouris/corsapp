@@ -95,14 +95,15 @@ class GeneralController < ApplicationController
         wem_failure = false # will change as time goes on
         nb_failure = false # will change as time goes on
         # 3a. Make the calls to NB
-        #if false && (donation.gnaf_address_identifier.nil? || donation.gnaf_address_identifier.length < 3 || donation.gnaf_address_identifier[0..1] == "MA")
-        #    nb_resp = donation.create_in_nationbuilder
-        #else
-        #    nb_resp = donation.create_in_nationbuilder_with_address
-        #    if nb_resp.code != 201
-        #        nb_resp = donation.create_in_nationbuilder
-        #    end
-        #end
+        #nb_resp = donation.create_in_nationbuilder
+        if false && (donation.gnaf_address_identifier.nil? || donation.gnaf_address_identifier.length < 3 || donation.gnaf_address_identifier[0..1] == "MA")
+            nb_resp = donation.create_in_nationbuilder
+        else
+            nb_resp = donation.create_in_nationbuilder_with_address
+            if nb_resp.code != 201
+                nb_resp = donation.create_in_nationbuilder
+            end
+        end
         #puts nb_resp
         nb_failure = false #(nb_resp.code != 201)
         #if !nb_failure
@@ -118,14 +119,14 @@ class GeneralController < ApplicationController
             return nil
         end
         # 3b. Make calls to WEM
-        wem_resp = donation.create_in_wem(params[:send_email_updates])
-        if wem_resp.code == 200 && !!wem_resp['Record Payment Success']
-            donation.imported_to_nb = false #true
-            donation.imported_to_nb_at = Time.now
-        else
-            donation.imported_to_nb = false
-            donation.other_data = "Could not create in WEM."
-        end
+        #wem_resp = donation.create_in_wem(params[:send_email_updates])
+        #if wem_resp.code == 200 && !!wem_resp['Record Payment Success']
+        #    donation.imported_to_nb = false #true
+        #    donation.imported_to_nb_at = Time.now
+        #else
+        #    donation.imported_to_nb = false
+        #    donation.other_data = "Could not create in WEM."
+        #end
         donation.save
         # 4. Return success
         if params[:recurring]
