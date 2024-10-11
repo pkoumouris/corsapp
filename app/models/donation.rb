@@ -209,6 +209,7 @@ class Donation < ApplicationRecord
             self.update_attribute(:nbid,nb_resp['data']['id'])
             self.update_attribute(:signup_nbid,nb_resp['data']['attributes']['signup_id'])
             self.update_signup
+            self.add_origin_tag_if_necessary
         end
         return nb_resp
     end
