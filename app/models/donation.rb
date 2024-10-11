@@ -222,7 +222,7 @@ class Donation < ApplicationRecord
                 'Accept'=>'application/json',
                 'Authorization'=>'Bearer '+General.access_token
             })
-        return nil if resp.code != 200 && Time.parse(resp['data']['attributes']['created_at']) < 1.minute.ago
+        return nil if resp.code != 200 || Time.parse(resp['data']['attributes']['created_at']) < 1.minute.ago
         resp = HTTParty.get("https://acl.nationbuilder.com/api/v2/signup_tags?filter[name]=#{'origin:donation:'+self.tracking_code_slug}",
             :headers => {
                 'Content-Type'=>'application/json',
