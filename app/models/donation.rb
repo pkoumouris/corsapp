@@ -213,6 +213,60 @@ class Donation < ApplicationRecord
         return nb_resp
     end
 
+    def add_origin_tag_if_necessary
+        return nil if self.signup_nbid.nil? || self.tracking_code_slug.nil?
+        resp = HTTParty.get("https://acl.nationbuilder.com/api/v2/signups/#{self.signup_nbid}",
+            :headers => {
+                'Content-Type'=>'application/json',
+                'Accept'=>'application/json',
+                'Authorization'=>'Bearer '+General.access_token
+            })
+        return nil if resp.code != 200 && Time.parse(resp['data']['attributes']['created_at']) < 1.minute.ago
+        resp = HTTParty.get("https://acl.nationbuilder.com/api/v2/signup_tags?filter[name]=#{'origin:donation:'+self.tracking_code_slug}",
+            :headers => {
+                'Content-Type'=>'application/json',
+                'Accept'=>'application/json',
+                'Authorization'=>'Bearer '+General.access_token
+            })
+        return nil if resp.code != 200
+        if resp['data'].length == 0
+            resp = HTTParty.post("https://acl.nationbuilder.com/api/v2/signup_tags",
+                :headers => {
+                    'Content-Type'=>'application/json',
+                    'Accept'=>'application/json',
+                    'Authorization'=>'Bearer '+General.access_token
+                },
+                :body => {
+                    'data' => {
+                        'type' => 'signup_tags',
+                        'attributes' => {
+                            'name' => 'origin:donation:'+self.tracking_code_slug
+                        }
+                    }
+                }.to_json)
+            return nil if resp.code != 201
+            tag_id = resp['data']['id']
+        else
+            tag_id = resp['data'][0]['id']
+        end
+        resp = HTTParty.post("https://acl.nationbuilder.com/api/v2/signup_taggings",
+            :headers => {
+                'Content-Type'=>'application/json',
+                'Accept'=>'application/json',
+                'Authorization'=>'Bearer '+General.access_token
+            },
+            :body => {
+                'data' => {
+                    'type' => 'signup_taggings',
+                    'attributes' => {
+                        'signup_id' => self.signup_nbid.to_s,
+                        'tag_id' => tag_id.to_s
+                    }
+                }
+            }.to_json)
+        return resp
+    end
+
     def create_in_nationbuilder
         attrs = self.fill_in_tracking_code_id.nil? ? {
             "amount_in_cents"=>self.amount_in_cents,
@@ -257,6 +311,7 @@ class Donation < ApplicationRecord
             self.update_attribute(:nbid,nb_resp['data']['id'])
             self.update_attribute(:signup_nbid,nb_resp['data']['attributes']['signup_id'])
             self.update_signup
+            self.add_origin_tag_if_necessary
         end
         return nb_resp
     end
